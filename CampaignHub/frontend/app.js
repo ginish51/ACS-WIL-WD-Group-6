@@ -5,6 +5,9 @@ const appState = {
   authMode: "login",
   currentUser: getStoredUser(),
   token: localStorage.getItem("token") || null,
+  joinedCampaigns: JSON.parse(localStorage.getItem("joinedCampaigns") || "[]"),
+  businesses: JSON.parse(localStorage.getItem("businesses") || "[]"),
+  selectedCause: null,
   activeCauseFilter: "all"
 };
 
