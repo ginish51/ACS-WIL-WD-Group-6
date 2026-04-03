@@ -8,7 +8,8 @@ const appState = {
   joinedCampaigns: JSON.parse(localStorage.getItem("joinedCampaigns") || "[]"),
   businesses: JSON.parse(localStorage.getItem("businesses") || "[]"),
   selectedCause: null,
-  activeCauseFilter: "all"
+  activeCauseFilter: "all",
+  selectedInterests: []
 };
 
 /** hard-coded for prototype purposes */
@@ -45,6 +46,39 @@ const causes = [
     location: "City Learning Center",
     participants: 31,
     image: "images/education.jpg"
+  },
+  {
+    id: 4,
+    title: "Equal Voices Campaign",
+    category: "equality",
+    categoryLabel: "Social Equality",
+    description: "Support inclusion programs, fairness initiatives, and equal opportunities for communities.",
+    date: "June 11, 2026",
+    location: "Melbourne Civic Centre",
+    participants: 18,
+    image: "images/equality.jpg"
+  },
+  {
+    id: 5,
+    title: "Healthy Communities Drive",
+    category: "health",
+    categoryLabel: "Health & Wellness",
+    description: "Promote wellness checks, health education, and community care support programs.",
+    date: "July 08, 2026",
+    location: "Southside Wellness Hub",
+    participants: 29,
+    image: "images/health.jpg"
+  },
+  {
+    id: 6,
+    title: "Hope Relief Program",
+    category: "poverty",
+    categoryLabel: "Poverty Relief",
+    description: "Help provide food packs, emergency essentials, and support services for families in need.",
+    date: "August 02, 2026",
+    location: "North Melbourne Outreach Center",
+    participants: 36,
+    image: "images/poverty.jpg"
   }
 ];
 
@@ -85,6 +119,10 @@ function getStoredUser() {
   }
 }
 
+function hasSelectedInterests() {
+  return Array.isArray(appState.selectedInterests) && appState.selectedInterests.length > 0;
+}
+
 function saveSession(token, user) {
   appState.token = token;
   appState.currentUser = user;
@@ -107,9 +145,26 @@ function saveBusinesses() {
   localStorage.setItem("businesses", JSON.stringify(appState.businesses));
 }
 
+function saveSelectedInterests() {
+  localStorage.setItem("selectedInterests", JSON.stringify(appState.selectedInterests));
+}
+
 function isValidEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   return emailRegex.test(email);
+}
+
+function getInterestLabel(interestKey) {
+  const labels = {
+    community: "💗 Community Support",
+    environment: "🌿 Environmental Action",
+    education: "🎓 Education Access",
+    equality: "⚖️ Social Equality",
+    health: "🏥 Health & Wellness",
+    poverty: "🤝 Poverty Relief"
+  };
+
+  return labels[interestKey] || interestKey;
 }
 
 function closeMobileMenu() {
@@ -119,19 +174,35 @@ function closeMobileMenu() {
   }
 }
 
-/** displays view from html file via section id & class with view*/
+function getInterestStorageKey(user = appState.currentUser) {
+  if (!user) return "selectedInterests_guest";
+  return `selectedInterests_${user.email || user.id}`;
+}
+
+function loadSelectedInterests(user = appState.currentUser) {
+  try {
+    return JSON.parse(localStorage.getItem(getInterestStorageKey(user)) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveSelectedInterests() {
+  localStorage.setItem(
+    getInterestStorageKey(),
+    JSON.stringify(appState.selectedInterests)
+  );
+}
+
 /** core SPA */
 function showView(viewId) {
-
   const target = $(viewId);
   if (!target) return;
 
-  /** hides other views */
   document.querySelectorAll(".view").forEach((view) => {
     view.classList.remove("active");
   });
 
-  /** shows chosen view via the viewID */
   target.classList.add("active");
   appState.currentView = viewId;
 
@@ -139,6 +210,14 @@ function showView(viewId) {
 
   if (viewId === "dashboardView") {
     updateDashboard();
+  }
+
+  if (viewId === "interestSelectionView") {
+    renderInterestSelection();
+  }
+
+  if (viewId === "interestSummaryView") {
+    renderInterestSummary();
   }
 
   closeMobileMenu();
@@ -238,7 +317,10 @@ function renderNav() {
     dropdown.appendChild(menu);
     nav.appendChild(dropdown);
   } else {
-    addButton("Sign In / Register", () => showView("authView"), "nav-button");
+    addButton("Sign In / Register", () => {
+      showView("authView");
+      setAuthMode("login");
+    }, "nav-button");
   }
 }
 
@@ -248,30 +330,78 @@ function renderCauses() {
 
   causeGrid.innerHTML = "";
 
-  const filteredCauses =
-    appState.activeCauseFilter === "all"
-      ? causes
-      : causes.filter((cause) => cause.category === appState.activeCauseFilter);
+  const searchValue = exists("causeSearchInput")
+    ? $("causeSearchInput").value.trim().toLowerCase()
+    : "";
+
+  const filteredCauses = causes.filter((cause) => {
+    const matchesFilter =
+      appState.activeCauseFilter === "all" || cause.category === appState.activeCauseFilter;
+
+    const matchesSearch =
+      !searchValue ||
+      cause.title.toLowerCase().includes(searchValue) ||
+      cause.categoryLabel.toLowerCase().includes(searchValue) ||
+      cause.description.toLowerCase().includes(searchValue);
+
+    return matchesFilter && matchesSearch;
+  });
+
+  if (exists("causeCountText")) {
+    $("causeCountText").textContent = `${filteredCauses.length} cause${filteredCauses.length !== 1 ? "s" : ""} found`;
+  }
+
+  const categoryIcons = {
+    community: "♡",
+    environment: "❃",
+    education: "🎓",
+    equality: "⚖",
+    health: "⌘",
+    poverty: "◫"
+  };
+
+  const projectCounts = {
+    community: 24,
+    environment: 18,
+    education: 15,
+    equality: 12,
+    health: 20,
+    poverty: 9
+  };
+
+  const activeCounts = {
+    community: "1.2K",
+    environment: "890",
+    education: "650",
+    equality: "540",
+    health: "980",
+    poverty: "420"
+  };
 
   filteredCauses.forEach((cause) => {
     const card = document.createElement("article");
-    card.className = "cause-card";
+    card.className = "cause-directory-card";
 
     card.innerHTML = `
-      <div class="card-image" style="background-image: url('${cause.image}');"></div>
-      <div class="card-body">
-        <span class="card-category">${cause.categoryLabel}</span>
-        <h3>${cause.title}</h3>
-        <p>${cause.description}</p>
-        <div class="card-meta">
-          <span>${cause.date}</span>
-          <span>${cause.participants} Active</span>
+      <div class="cause-directory-image-wrap">
+        <div class="cause-directory-image" style="background-image: url('${cause.image}');"></div>
+        <div class="cause-directory-badge badge-${cause.category}">
+          ${categoryIcons[cause.category] || "•"}
         </div>
-        <button class="btn btn-primary" type="button">View Cause</button>
+        <button class="cause-fav-btn" type="button">♡</button>
+      </div>
+
+      <div class="cause-directory-body">
+        <h3 class="cause-directory-title">${cause.categoryLabel}</h3>
+
+        <div class="cause-directory-meta">
+          <span class="cause-meta-pill">👜 ${projectCounts[cause.category] || 10} Projects</span>
+          <span class="cause-meta-pill">⍟ ${activeCounts[cause.category] || 500} Active</span>
+        </div>
       </div>
     `;
 
-    card.querySelector("button").addEventListener("click", () => openCauseDetail(cause.id));
+    card.addEventListener("click", () => openCauseDetail(cause.id));
     causeGrid.appendChild(card);
   });
 }
@@ -313,7 +443,7 @@ function renderBusinesses() {
         <h3>${business.name}</h3>
         <p>${business.description}</p>
         <div class="card-meta">
-          <span>⭐ 4.8</span>
+          <span></span>
           <span>${business.trending || "New Listing"}</span>
         </div>
       </div>
@@ -335,31 +465,34 @@ function updateDashboard() {
 
   if (exists("dashboardName")) $("dashboardName").textContent = user.name;
   if (exists("dashboardMeta")) {
-    $("dashboardMeta").textContent = `Impact Maker since ${new Date().getFullYear()}`;
+    $("dashboardMeta").textContent = `Impact Maker since January ${new Date().getFullYear()}`;
   }
 
-  if (exists("statCampaigns")) $("statCampaigns").textContent = appState.joinedCampaigns.length;
+  if (exists("statCampaigns")) $("statCampaigns").textContent = appState.joinedCampaigns.length || 12;
   if (exists("statPoints")) {
     $("statPoints").textContent = 100 + appState.joinedCampaigns.length * 25;
   }
-  if (exists("statBusinesses")) $("statBusinesses").textContent = appState.businesses.length;
+  if (exists("statBusinesses")) $("statBusinesses").textContent = appState.businesses.length || 5;
+  if (exists("statHours")) $("statHours").textContent = 87;
 
-  const achievementList = $("achievementList");
-  if (!achievementList) return;
+  const dashboardInterestTags = $("dashboardInterestTags");
+  if (dashboardInterestTags) {
+    dashboardInterestTags.innerHTML = "";
 
-  achievementList.innerHTML = "";
-
-  const achievements = [
-    appState.joinedCampaigns.length > 0 ? "Joined at least one campaign" : "Join your first campaign",
-    appState.businesses.length > 0 ? "Submitted a business profile" : "Submit a social business",
-    "Completed profile access setup"
-  ];
-
-  achievements.forEach((item) => {
-    const li = document.createElement("li");
-    li.textContent = item;
-    achievementList.appendChild(li);
-  });
+    if (!appState.selectedInterests || appState.selectedInterests.length === 0) {
+      const empty = document.createElement("p");
+      empty.className = "small-muted";
+      empty.textContent = "No interests selected yet.";
+      dashboardInterestTags.appendChild(empty);
+    } else {
+      appState.selectedInterests.forEach((interest) => {
+        const tag = document.createElement("span");
+        tag.className = "interest-tag";
+        tag.textContent = getInterestLabel(interest);
+        dashboardInterestTags.appendChild(tag);
+      });
+    }
+  }
 }
 
 function setAuthMode(mode) {
@@ -367,8 +500,6 @@ function setAuthMode(mode) {
 
   const isLogin = mode === "login";
 
-  if (exists("showLoginTab")) $("showLoginTab").classList.toggle("active", isLogin);
-  if (exists("showRegisterTab")) $("showRegisterTab").classList.toggle("active", !isLogin);
   if (exists("loginForm")) $("loginForm").classList.toggle("hidden", !isLogin);
   if (exists("registerForm")) $("registerForm").classList.toggle("hidden", isLogin);
 
@@ -434,14 +565,17 @@ async function handleLogin(event) {
       body: JSON.stringify({ email, password })
     });
 
-    saveSession(data.token, data.user);
+   saveSession(data.token, data.user);
+appState.selectedInterests = loadSelectedInterests(data.user);
+renderNav();
     renderNav();
 
-    if (exists("dashboardView")) {
-      updateDashboard();
-      showView("dashboardView");
+    if (hasSelectedInterests()) {
+      renderInterestSummary();
+      showView("interestSummaryView");
     } else {
-      showView("landingView");
+      renderInterestSelection();
+      showView("interestSelectionView");
     }
   } catch (error) {
     if (exists("loginMsg")) $("loginMsg").textContent = error.message || "Failed to log in.";
@@ -449,7 +583,6 @@ async function handleLogin(event) {
 }
 
 async function handleRegister(event) {
-
   if (event) {
     event.preventDefault();
     event.stopPropagation();
@@ -510,8 +643,6 @@ async function handleRegister(event) {
       }
     });
   } catch (error) {
-    console.log("REGISTER ERROR:", error);
-
     if (exists("registerMsg")) {
       $("registerMsg").textContent =
         error.message || "Registration failed. Please try again.";
@@ -603,8 +734,114 @@ function updateBusinessPreview() {
 
 function handleLogout() {
   clearSession();
+  appState.selectedInterests = [];
   renderNav();
   showView("landingView");
+}
+
+function handleLandingContinue() {
+  if (!appState.currentUser) {
+    showView("authView");
+    setAuthMode("login");
+    return;
+  }
+
+  if (hasSelectedInterests()) {
+    renderInterestSummary();
+    showView("interestSummaryView");
+    return;
+  }
+
+  renderInterestSelection();
+  showView("interestSelectionView");
+}
+
+function renderInterestSelection() {
+  document.querySelectorAll(".interest-card").forEach((card) => {
+    const key = card.dataset.interest;
+    card.classList.toggle("selected", appState.selectedInterests.includes(key));
+  });
+
+  if (exists("interestMsg")) {
+    $("interestMsg").textContent =
+      appState.selectedInterests.length === 0
+        ? "Please choose up to 2 interests."
+        : `Selected ${appState.selectedInterests.length}/2 interest${appState.selectedInterests.length > 1 ? "s" : ""}.`;
+  }
+}
+
+function toggleInterestSelection(event) {
+  const card = event.currentTarget;
+  const interest = card.dataset.interest;
+  const alreadySelected = appState.selectedInterests.includes(interest);
+
+  if (alreadySelected) {
+    appState.selectedInterests = appState.selectedInterests.filter((item) => item !== interest);
+  } else {
+    if (appState.selectedInterests.length >= 2) {
+      if (exists("interestMsg")) {
+        $("interestMsg").textContent = "You can choose at most 2 interests.";
+      }
+      return;
+    }
+
+    appState.selectedInterests.push(interest);
+  }
+
+  saveSelectedInterests();
+  renderInterestSelection();
+}
+
+function handleInterestContinue() {
+  if (appState.selectedInterests.length === 0) {
+    if (exists("interestMsg")) {
+      $("interestMsg").textContent = "Please select at least 1 interest.";
+    }
+    return;
+  }
+
+  saveSelectedInterests();
+  renderInterestSummary();
+  showView("interestSummaryView");
+}
+
+function renderInterestSummary() {
+  const container = $("selectedInterestTags");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  appState.selectedInterests.forEach((interest) => {
+    const tag = document.createElement("span");
+    tag.className = "interest-tag";
+    tag.textContent = getInterestLabel(interest);
+    container.appendChild(tag);
+  });
+}
+
+function handleStartExploringByInterest() {
+  appState.activeCauseFilter = "all";
+
+  document.querySelectorAll(".chip").forEach((chip) => {
+    chip.classList.toggle("active", chip.dataset.filter === "all");
+  });
+
+  renderCauses();
+  showView("landingView");
+
+  requestAnimationFrame(() => {
+    const causesSection = $("causesSection");
+    if (!causesSection) return;
+
+    const headerOffset = 96;
+    const targetY =
+      causesSection.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+
+    window.scrollTo({
+      top: targetY,
+      behavior: "smooth"
+    });
+  });
 }
 
 function setupFilters() {
@@ -656,10 +893,21 @@ function setupMenuToggle() {
   });
 }
 
-/** checks if bind events exist; not visible if not **/
 function bindEvents() {
+
+  if (exists("causeSearchInput")) {
+  $("causeSearchInput").addEventListener("input", renderCauses);
+}
+
   if (exists("discoverBtn")) $("discoverBtn").addEventListener("click", scrollToCauses);
-  if (exists("startExploringBtn")) $("startExploringBtn").addEventListener("click", scrollToCauses);
+
+  if (exists("startExploringBtn")) {
+    $("startExploringBtn").addEventListener("click", handleLandingContinue);
+  }
+
+  if (exists("landingBackBtn")) {
+    $("landingBackBtn").addEventListener("click", () => window.history.back());
+  }
 
   if (exists("showLoginTab")) $("showLoginTab").addEventListener("click", () => setAuthMode("login"));
   if (exists("showRegisterTab")) $("showRegisterTab").addEventListener("click", () => setAuthMode("register"));
@@ -678,13 +926,41 @@ function bindEvents() {
   if (exists("businessDescription")) $("businessDescription").addEventListener("input", updateBusinessPreview);
   if (exists("businessCategory")) $("businessCategory").addEventListener("change", updateBusinessPreview);
 
+  if (exists("interestContinueBtn")) {
+    $("interestContinueBtn").addEventListener("click", handleInterestContinue);
+  }
+
+  if (exists("interestBackBtn")) {
+    $("interestBackBtn").addEventListener("click", () => showView("landingView"));
+  }
+
+  if (exists("summaryBackBtn")) {
+    $("summaryBackBtn").addEventListener("click", () => {
+      if (hasSelectedInterests()) {
+        showView("landingView");
+      } else {
+        showView("interestSelectionView");
+      }
+    });
+  }
+
+  if (exists("startExploringInterestsBtn")) {
+    $("startExploringInterestsBtn").addEventListener("click", handleStartExploringByInterest);
+  }
+
+  document.querySelectorAll(".interest-card").forEach((card) => {
+    card.addEventListener("click", toggleInterestSelection);
+  });
+
   setupFilters();
   setupViewButtons();
   setupMenuToggle();
 }
 
-/** default view of the landing page. loads everything at the start **/
 function init() {
+  if (appState.currentUser) {
+    appState.selectedInterests = loadSelectedInterests(appState.currentUser);
+  }
 
   renderNav();
   renderCauses();

@@ -18,139 +18,383 @@
   <main>
     <!-- landing page -->
     <section id="landingView" class="view active">
-      <section class="hero hero-screen">
-        <div class="hero-content figma-hero">
-          <div class="hero-badge-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" class="hero-badge-svg">
-              <path d="M12 3.5L13.7 9.1L19.3 10.8L13.7 12.5L12 18.1L10.3 12.5L4.7 10.8L10.3 9.1L12 3.5Z"></path>
-              <path d="M18.5 4.5L19.1 6.1L20.7 6.7L19.1 7.3L18.5 8.9L17.9 7.3L16.3 6.7L17.9 6.1L18.5 4.5Z"></path>
+  <section class="landing-card-screen">
+    <div class="landing-card-panel">
+      <div class="landing-top-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" class="landing-top-icon-svg">
+          <path d="M12 3.5L13.4 9.1L19 10.5L13.4 11.9L12 17.5L10.6 11.9L5 10.5L10.6 9.1L12 3.5Z"></path>
+          <path d="M17.8 5.2L18.2 6.3L19.3 6.7L18.2 7.1L17.8 8.2L17.4 7.1L16.3 6.7L17.4 6.3L17.8 5.2Z"></path>
+          <circle cx="8.4" cy="12.9" r="0.6" fill="currentColor" stroke="none"></circle>
+        </svg>
+      </div>
+
+      <h1 class="landing-card-title">Welcome to ImpactHub! 🌍</h1>
+      <p class="landing-card-subtitle">
+        You're now part of a global movement working towards positive
+        social change
+      </p>
+
+      <div class="landing-feature-row">
+        <article class="landing-feature-item">
+          <div class="landing-feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" class="landing-feature-svg">
+              <circle cx="12" cy="12" r="6.6"></circle>
+              <circle cx="12" cy="12" r="3.2"></circle>
+              <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"></circle>
             </svg>
           </div>
+          <h3>Discover Causes</h3>
+          <p>Find campaigns aligned with your values</p>
+        </article>
 
-          <p class="eyebrow">MAKE EVERYDAY ACTION MEANINGFUL</p>
-          <h1>Let's Create Impact Together</h1>
-          <p class="hero-text">
-            You're now part of a global movement working towards positive social
-            change.
-          </p>
-
-          <div class="hero-highlights figma-three-up">
-            <article class="highlight-card icon-card">
-              <div class="mini-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" class="mini-icon-svg">
-                  <circle cx="12" cy="12" r="6.5"></circle>
-                  <circle cx="12" cy="12" r="3.2"></circle>
-                  <circle cx="12" cy="12" r="0.9" fill="currentColor" stroke="none"></circle>
-                </svg>
-              </div>
-              <h3>Discover Causes</h3>
-              <p>Find campaigns aligned with your values</p>
-            </article>
-
-            <article class="highlight-card icon-card">
-              <div class="mini-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" class="mini-icon-svg">
-                  <circle cx="9" cy="9" r="2.4"></circle>
-                  <circle cx="15.5" cy="10" r="2"></circle>
-                  <path d="M5.8 17.2C5.8 14.9 7.6 13.3 9.9 13.3C12.2 13.3 14 14.9 14 17.2"></path>
-                  <path d="M13.4 16.8C13.7 15.2 15 14.1 16.7 14.1C18.4 14.1 19.6 15.2 19.9 16.8"></path>
-                </svg>
-              </div>
-              <h3>Connect</h3>
-              <p>Join a community of changemakers</p>
-            </article>
-
-            <article class="highlight-card icon-card">
-              <div class="mini-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" class="mini-icon-svg">
-                  <polyline points="4,16 9,11 13,13 20,6"></polyline>
-                  <line x1="4" y1="20" x2="20" y2="20"></line>
-                </svg>
-              </div>
-              <h3>Track Impact</h3>
-              <p>See your real-world difference</p>
-            </article>
+        <article class="landing-feature-item">
+          <div class="landing-feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" class="landing-feature-svg">
+              <circle cx="9" cy="9" r="2.2"></circle>
+              <circle cx="15.5" cy="9.8" r="1.9"></circle>
+              <path d="M5.7 17.1C5.7 14.8 7.5 13.3 9.8 13.3C12.1 13.3 13.9 14.8 13.9 17.1"></path>
+              <path d="M13.3 16.6C13.6 15.1 14.8 14.1 16.4 14.1C18 14.1 19.2 15.1 19.5 16.6"></path>
+            </svg>
           </div>
+          <h3>Connect</h3>
+          <p>Join a community of changemakers</p>
+        </article>
 
-          <div class="hero-actions centered-actions">
-            <button id="startExploringBtn" class="btn btn-primary" type="button">Start Exploring</button>
+        <article class="landing-feature-item">
+          <div class="landing-feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" class="landing-feature-svg">
+              <polyline points="5,15 9,11 12.5,13.5 19,7"></polyline>
+              <polyline points="15,7 19,7 19,11"></polyline>
+            </svg>
           </div>
-        </div>
-      </section>
+          <h3>Track Impact</h3>
+          <p>See your real-world difference</p>
+        </article>
+      </div>
 
-      <section id="causesSection" class="page-section causes-section">
-        <div class="section-heading causes-heading">
-          <div>
-            <p class="eyebrow">Make a Change</p>
-            <h2>Explore Causes</h2>
-          </div>
+      <div class="landing-card-divider"></div>
 
-          <div class="filters">
-            <button class="chip active" data-filter="all" type="button">All</button>
-            <button class="chip" data-filter="community" type="button">Community</button>
-            <button class="chip" data-filter="environment" type="button">Environment</button>
-            <button class="chip" data-filter="education" type="button">Education</button>
-          </div>
-        </div>
+      <div class="landing-card-actions">
+        <button class="landing-back-link" id="landingBackBtn" type="button"></button>
+        <button id="startExploringBtn" class="btn landing-continue-btn" type="button">
+          <span>Continue</span>
+          <span class="btn-arrow">→</span>
+        </button>
+      </div>
+    </div>
+  </section>
 
-        <div id="causeGrid" class="card-grid"></div>
-      </section>
-    </section>
+  <section id="causesSection" class="page-section causes-directory-section">
+  <div class="causes-toolbar">
+    <div class="causes-search-wrap">
+      <span class="causes-search-icon">⌕</span>
+      <input
+        id="causeSearchInput"
+        class="causes-search-input"
+        type="text"
+        placeholder="Search for causes..."
+      />
+    </div>
+
+    <button class="causes-filter-btn" type="button">
+      <span>⟟</span>
+      <span>Filters</span>
+    </button>
+  </div>
+
+  <p id="causeCountText" class="cause-count-text">6 causes found</p>
+
+  <div id="causeGrid" class="cause-directory-grid"></div>
+</section>
+</section>
+
+<section id="interestSelectionView" class="view">
+  <section class="landing-card-screen">
+    <div class="landing-card-panel">
+      <h1 class="landing-card-title">Choose Your Interests</h1>
+      <p class="landing-card-subtitle">
+        Select the causes you care about most
+      </p>
+
+      <div class="interest-grid">
+        <button class="interest-card" type="button" data-interest="community">
+          <span class="interest-emoji">💗</span>
+          <span>Community Support</span>
+        </button>
+
+        <button class="interest-card" type="button" data-interest="environment">
+          <span class="interest-emoji">🌿</span>
+          <span>Environmental Action</span>
+        </button>
+
+        <button class="interest-card" type="button" data-interest="education">
+          <span class="interest-emoji">🎓</span>
+          <span>Education Access</span>
+        </button>
+
+        <button class="interest-card" type="button" data-interest="equality">
+          <span class="interest-emoji">⚖️</span>
+          <span>Social Equality</span>
+        </button>
+
+        <button class="interest-card" type="button" data-interest="health">
+          <span class="interest-emoji">🏥</span>
+          <span>Health &amp; Wellness</span>
+        </button>
+
+        <button class="interest-card" type="button" data-interest="poverty">
+          <span class="interest-emoji">🤝</span>
+          <span>Poverty Relief</span>
+        </button>
+      </div>
+
+      <p id="interestMsg" class="form-message"></p>
+
+      <div class="landing-card-divider"></div>
+
+      <div class="landing-card-actions">
+        <button class="landing-back-link" id="interestBackBtn" type="button">Back</button>
+        <button id="interestContinueBtn" class="btn landing-continue-btn" type="button">
+          <span>Continue</span>
+          <span class="btn-arrow">→</span>
+        </button>
+      </div>
+    </div>
+  </section>
+</section>
+
+<section id="interestSummaryView" class="view">
+  <section class="landing-card-screen">
+    <div class="landing-card-panel">
+      <div class="landing-top-icon" aria-hidden="true">✨</div>
+
+      <h1 class="landing-card-title">You're All Set! ✨</h1>
+      <p class="landing-card-subtitle">
+        Let's start making a difference together
+      </p>
+
+      <div class="interest-summary-box">
+  <p>Your selected interests:</p>
+  <div id="selectedInterestTags" class="selected-interest-tags"></div>
+</div>
+
+<p class="interest-change-note">
+  Want to change your interests? Go to your profile or dashboard.
+</p>
+
+      <div class="landing-card-divider"></div>
+
+      <div class="landing-card-actions">
+        <button class="landing-back-link" id="summaryBackBtn" type="button">Back</button>
+        <button id="startExploringInterestsBtn" class="btn landing-continue-btn" type="button">
+          <span>Start Exploring</span>
+          <span class="btn-arrow">→</span>
+        </button>
+      </div>
+    </div>
+  </section>
+</section>
 
     <!-- AUTH -->
     <section id="authView" class="view">
-      <div class="auth-shell">
-        <div class="auth-card">
-          <p class="eyebrow">ACCOUNT ACCESS</p>
-          <h2 id="authTitle">Welcome Back</h2>
-          <p class="muted" id="authSubtitle">
-            Log in to continue your impact journey.
-          </p>
+  <div class="auth-screen auth-screen-contained">
+    <div class="auth-brand-block">
+      <div class="auth-logo-box">🌍</div>
+      <h1 class="auth-brand-title">ImpactHub</h1>
+      <p class="auth-brand-subtitle">Making the world better, together</p>
+    </div>
 
-          <div class="auth-toggle">
-            <button id="showLoginTab" class="toggle-btn active" type="button">Log In</button>
-            <button id="showRegisterTab" class="toggle-btn" type="button">Register</button>
+    <div class="auth-card auth-card-login">
+      <h2 id="authTitle" class="sr-only">Welcome Back</h2>
+      <p class="muted sr-only" id="authSubtitle">
+        Log in to continue your impact journey.
+      </p>
+
+      <div id="loginForm" class="auth-form">
+        <label class="auth-label">
+          <span>Email</span>
+          <div class="input-wrap">
+            <span class="input-icon">✉</span>
+            <input id="loginEmail" type="email" placeholder="your@email.com" />
           </div>
+        </label>
 
-          <div id="loginForm" class="auth-form">
-            <label>
-              Email
-              <input id="loginEmail" type="email" placeholder="Email address" />
-            </label>
-
-            <label>
-              Password
-              <input id="loginPassword" type="password" placeholder="Password" />
-            </label>
-
-            <button id="loginBtn" type="button" class="btn btn-primary full">Log In</button>
-            <p id="loginMsg" class="form-message"></p>
+        <label class="auth-label">
+          <span>Password</span>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input id="loginPassword" type="password" placeholder="••••••••" />
           </div>
+        </label>
 
-          <div id="registerForm" class="auth-form hidden">
-            <label>
-              Full Name
-              <input id="registerName" type="text" placeholder="Your name" />
-            </label>
+        <div class="auth-row">
+          <label class="remember-check">
+            <input type="checkbox" />
+            <span>Remember me</span>
+          </label>
 
-            <label>
-              Email
-              <input id="registerEmail" type="email" placeholder="Email address" />
-            </label>
-
-            <label>
-              Password
-              <input id="registerPassword" type="password" placeholder="At least 6 characters" />
-            </label>
-
-            <button id="registerBtn" type="button" class="btn btn-primary full">Create Account</button>
-            <p id="registerMsg" class="form-message"></p>
-          </div>
+          <button type="button" class="forgot-link">Forgot password?</button>
         </div>
-      </div>
-    </section>
 
-    <!-- cause detail 
+        <button id="loginBtn" type="button" class="btn btn-primary full auth-login-btn">
+          <span>Log In</span>
+          <span class="btn-arrow">→</span>
+        </button>
+
+        <p id="loginMsg" class="form-message"></p>
+
+        <div class="auth-divider"></div>
+
+        <p class="auth-switch-text">
+          Don't have an account?
+          <button id="showRegisterTab" class="auth-switch-link" type="button">Sign up</button>
+        </p>
+      </div>
+
+      <div id="registerForm" class="auth-form hidden">
+        <label class="auth-label">
+          <span>Full Name</span>
+          <div class="input-wrap">
+            <span class="input-icon">👤</span>
+            <input id="registerName" type="text" placeholder="Your name" />
+          </div>
+        </label>
+
+        <label class="auth-label">
+          <span>Email</span>
+          <div class="input-wrap">
+            <span class="input-icon">✉</span>
+            <input id="registerEmail" type="email" placeholder="your@email.com" />
+          </div>
+        </label>
+
+        <label class="auth-label">
+          <span>Password</span>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input id="registerPassword" type="password" placeholder="At least 6 characters" />
+          </div>
+        </label>
+
+        <button id="registerBtn" type="button" class="btn btn-primary full auth-login-btn">
+          <span>Create Account</span>
+          <span class="btn-arrow">→</span>
+        </button>
+
+        <p id="registerMsg" class="form-message"></p>
+
+        <div class="auth-divider"></div>
+
+        <p class="auth-switch-text">
+          Already have an account?
+          <button id="showLoginTab" class="auth-switch-link" type="button">Log in</button>
+        </p>
+      </div>
+    </div>
+
+    <p class="auth-bottom-note">Join thousands making a real impact 🌱</p>
+  </div>
+</section><section id="authView" class="view">
+  <div class="auth-screen auth-screen-contained">
+    <div class="auth-brand-block">
+      <div class="auth-logo-box">🌍</div>
+      <h1 class="auth-brand-title">ImpactHub</h1>
+      <p class="auth-brand-subtitle">Making the world better, together</p>
+    </div>
+
+    <div class="auth-card auth-card-login">
+      <h2 id="authTitle" class="sr-only">Welcome Back</h2>
+      <p class="muted sr-only" id="authSubtitle">
+        Log in to continue your impact journey.
+      </p>
+
+      <div id="loginForm" class="auth-form">
+        <label class="auth-label">
+          <span>Email</span>
+          <div class="input-wrap">
+            <span class="input-icon">✉</span>
+            <input id="loginEmail" type="email" placeholder="your@email.com" />
+          </div>
+        </label>
+
+        <label class="auth-label">
+          <span>Password</span>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input id="loginPassword" type="password" placeholder="••••••••" />
+          </div>
+        </label>
+
+        <div class="auth-row">
+          <label class="remember-check">
+            <input type="checkbox" />
+            <span>Remember me</span>
+          </label>
+
+          <button type="button" class="forgot-link">Forgot password?</button>
+        </div>
+
+        <button id="loginBtn" type="button" class="btn btn-primary full auth-login-btn">
+          <span>Log In</span>
+          <span class="btn-arrow">→</span>
+        </button>
+
+        <p id="loginMsg" class="form-message"></p>
+
+        <div class="auth-divider"></div>
+
+        <p class="auth-switch-text">
+          Don't have an account?
+          <button id="showRegisterTab" class="auth-switch-link" type="button">Sign up</button>
+        </p>
+      </div>
+
+      <div id="registerForm" class="auth-form hidden">
+        <label class="auth-label">
+          <span>Full Name</span>
+          <div class="input-wrap">
+            <span class="input-icon">👤</span>
+            <input id="registerName" type="text" placeholder="Your name" />
+          </div>
+        </label>
+
+        <label class="auth-label">
+          <span>Email</span>
+          <div class="input-wrap">
+            <span class="input-icon">✉</span>
+            <input id="registerEmail" type="email" placeholder="your@email.com" />
+          </div>
+        </label>
+
+        <label class="auth-label">
+          <span>Password</span>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input id="registerPassword" type="password" placeholder="At least 6 characters" />
+          </div>
+        </label>
+
+        <button id="registerBtn" type="button" class="btn btn-primary full auth-login-btn">
+          <span>Create Account</span>
+          <span class="btn-arrow">→</span>
+        </button>
+
+        <p id="registerMsg" class="form-message"></p>
+
+        <div class="auth-divider"></div>
+
+        <p class="auth-switch-text">
+          Already have an account?
+          <button id="showLoginTab" class="auth-switch-link" type="button">Log in</button>
+        </p>
+      </div>
+    </div>
+
+    <p class="auth-bottom-note">Join thousands making a real impact 🌱</p>
+  </div>
+</section>
+
+    <!-- cause detail -->
     <section id="causeDetailView" class="view">
       <div class="detail-shell">
         <button class="text-link" data-back="landingView" type="button">← Back to Causes</button>
@@ -174,7 +418,7 @@
           </div>
         </article>
       </div>
-    </section> -->
+    </section>
 
     <!-- join success 
 
@@ -255,8 +499,8 @@
               Your business description will appear here...
             </p>
             <div class="preview-foot">
-              <span>⭐ 4.8</span>
-              <span>+15% Growth</span>
+             <!-- <span>⭐ 4.8</span>
+              <span>+15% Growth</span> -->
             </div>
           </aside>
         </div>
@@ -277,55 +521,166 @@
       </div>
     </section> 
 
-    <!-- dashboard 
+    <!-- dashboard -->
     <section id="dashboardView" class="view">
-      <div class="page-section">
-        <div class="dashboard-hero">
-          <div>
-            <p class="eyebrow">MY ACCOUNT</p>
-            <h2 id="dashboardName">Sarah Johnson</h2>
-            <p id="dashboardMeta" class="muted">Impact Maker since Jan 2026</p>
-          </div>
+  <div class="dashboard-shell">
+    <section class="dashboard-profile-card">
+      <div class="dashboard-profile-left">
+        <div class="dashboard-avatar-box">
+          <svg viewBox="0 0 24 24" class="dashboard-avatar-icon" aria-hidden="true">
+            <circle cx="12" cy="8" r="3.2"></circle>
+            <path d="M6.5 18.2C6.5 14.9 8.8 13 12 13C15.2 13 17.5 14.9 17.5 18.2"></path>
+          </svg>
         </div>
 
-        <div class="stats-grid">
-          <article class="stat-card">
-            <h3 id="statCampaigns">12</h3>
-            <p>Campaigns Joined</p>
-          </article>
+        <div class="dashboard-profile-info">
+          <h2 id="dashboardName">Sarah Johnson</h2>
+          <p id="dashboardMeta">Impact Maker since January 2026</p>
 
-          <article class="stat-card">
-            <h3 id="statPoints">350</h3>
-            <p>Impact Points</p>
-          </article>
-
-          <article class="stat-card">
-            <h3 id="statBusinesses">5</h3>
-            <p>Businesses Supported</p>
-          </article>
-        </div>
-
-        <div class="two-col">
-          <div class="info-card">
-            <h3>Quick Actions</h3>
-            <div class="stack-actions">
-              <button class="btn btn-secondary" data-target="landingView" type="button">View Causes</button>
-              <button class="btn btn-secondary" data-target="promoteBusinessView" type="button">Promote Business</button>
-              <button class="btn btn-secondary" data-target="businessDirectoryView" type="button">Browse Businesses</button>
-            </div>
-          </div>
-
-          <div class="info-card">
-            <h3>My Achievements</h3>
-            <ul id="achievementList">
-              <li>Joined first campaign</li>
-              <li>Supported one social business</li>
-              <li>Completed impact profile</li>
-            </ul>
+          <div class="dashboard-badges">
+            <span class="dashboard-badge badge-level">Level 5</span>
+            <span class="dashboard-badge badge-streak">🔥 12 Day Streak</span>
           </div>
         </div>
       </div>
-    </section> -->
+
+      <button class="dashboard-edit-btn" type="button">Edit Profile</button>
+    </section>
+
+    <section class="dashboard-stats-grid">
+      <article class="dashboard-stat-card">
+        <div class="dashboard-stat-icon icon-pink">♡</div>
+        <h3 id="statCampaigns">12</h3>
+        <p class="dashboard-stat-title">Campaigns</p>
+        <span class="dashboard-stat-sub">+3 this month</span>
+      </article>
+
+      <article class="dashboard-stat-card">
+        <div class="dashboard-stat-icon icon-green">⌘</div>
+        <h3 id="statPoints">350</h3>
+        <p class="dashboard-stat-title">Impact Points</p>
+        <span class="dashboard-stat-sub">+50 this week</span>
+      </article>
+
+      <article class="dashboard-stat-card">
+        <div class="dashboard-stat-icon icon-blue">🏪</div>
+        <h3 id="statBusinesses">5</h3>
+        <p class="dashboard-stat-title">Businesses</p>
+        <span class="dashboard-stat-sub">Supporting</span>
+      </article>
+
+      <article class="dashboard-stat-card">
+        <div class="dashboard-stat-icon icon-yellow">📅</div>
+        <h3 id="statHours">87</h3>
+        <p class="dashboard-stat-title">Hours</p>
+        <span class="dashboard-stat-sub">Total volunteered</span>
+      </article>
+    </section>
+
+    <div class="dashboard-tabs">
+      <button class="dashboard-tab active" type="button">Overview</button>
+      <button class="dashboard-tab" type="button">Activity</button>
+      <button class="dashboard-tab" type="button">Achievements</button>
+    </div>
+
+    <section class="dashboard-main-grid">
+      <article class="dashboard-panel">
+        <h3 class="dashboard-panel-title">↗ Volunteer Hours</h3>
+
+        <div class="hours-chart">
+          <div class="hours-y-axis">
+            <span>28</span>
+            <span>21</span>
+            <span>14</span>
+            <span>7</span>
+            <span>0</span>
+          </div>
+
+          <div class="hours-chart-area">
+            <div class="hours-grid-lines"></div>
+            <svg viewBox="0 0 520 240" class="hours-chart-svg" preserveAspectRatio="none" aria-hidden="true">
+              <path
+                d="M0,180 L100,145 L200,120 L300,95 L400,55 L520,20 L520,240 L0,240 Z"
+                class="hours-area-fill"
+              ></path>
+              <path
+                d="M0,180 L100,145 L200,120 L300,95 L400,55 L520,20"
+                class="hours-line"
+              ></path>
+            </svg>
+
+            <div class="hours-x-axis">
+              <span>Oct</span>
+              <span>Nov</span>
+              <span>Dec</span>
+              <span>Jan</span>
+              <span>Feb</span>
+              <span>Mar</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="dashboard-panel">
+        <h3 class="dashboard-panel-title">Impact by Category</h3>
+
+        <div class="impact-chart-wrap">
+          <div class="impact-pie-chart"></div>
+
+          <div class="impact-chart-label label-education">Education</div>
+          <div class="impact-chart-label label-environment">Environment</div>
+          <div class="impact-chart-label label-community">Community</div>
+          <div class="impact-chart-label label-justice">Justice</div>
+        </div>
+
+        <div class="impact-legend">
+          <span><i class="legend-dot dot-environment"></i>Environment</span>
+          <span><i class="legend-dot dot-education"></i>Education</span>
+          <span><i class="legend-dot dot-community"></i>Community</span>
+          <span><i class="legend-dot dot-justice"></i>Justice</span>
+        </div>
+      </article>
+    </section>
+
+    <section class="dashboard-panel dashboard-interests-panel">
+      <h3 class="dashboard-panel-title">My Interests</h3>
+      <div id="dashboardInterestTags" class="selected-interest-tags"></div>
+      <p class="interest-change-note">
+        To change your interests, go to your profile or dashboard settings.
+      </p>
+    </section>
+
+    <section class="dashboard-panel dashboard-quick-actions">
+      <h3 class="dashboard-panel-title">Quick Actions</h3>
+
+      <div class="quick-actions-grid">
+        <button class="quick-action-card" data-target="landingView" type="button">
+          <span class="quick-action-icon">♡</span>
+          <div>
+            <strong>My Campaigns</strong>
+            <span>View all activities</span>
+          </div>
+        </button>
+
+        <button class="quick-action-card" data-target="businessDirectoryView" type="button">
+          <span class="quick-action-icon">🏪</span>
+          <div>
+            <strong>Businesses</strong>
+            <span>Supported companies</span>
+          </div>
+        </button>
+
+        <button class="quick-action-card" data-target="landingView" type="button">
+          <span class="quick-action-icon">↗</span>
+          <div>
+            <strong>Explore More</strong>
+            <span>Find new causes</span>
+          </div>
+        </button>
+      </div>
+    </section>
+  </div>
+</section>
 
     <!-- logout -->
     <section id="logoutView" class="view">
