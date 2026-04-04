@@ -963,7 +963,7 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin: 6px 0 20px;
+  margin: 10px 0 20px;
 }
 
 .remember-check {
@@ -973,10 +973,21 @@ a {
   font-weight: 500;
   color: #516178;
   cursor: pointer;
+  line-height: 1;
 }
 
 .remember-check input {
   margin: 0;
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+  position: relative;
+  top: 0px;
+}
+
+.remember-check span {
+  display: inline-flex;
+  align-items: center;
 }
 
 .forgot-link {
