@@ -223,7 +223,7 @@
           <span>Password</span>
           <div class="input-wrap">
             <span class="input-icon">🔒</span>
-            <input id="loginPassword" type="password" placeholder="Enter your password" />
+            <input id="loginPassword" type="password" placeholder="••••••••" />
           </div>
         </label>
 
@@ -420,7 +420,7 @@
       </div>
     </section>
 
-    <!-- join success 
+    <!-- join success -->
 
     <section id="joinSuccessView" class="view">
       <div class="panel">
@@ -453,59 +453,128 @@
           <button class="btn btn-secondary" data-target="landingView" type="button">Back Home</button>
         </div>
       </div>
-    </section> -->
+    </section> 
 
     <!-- promote business -->
     <section id="promoteBusinessView" class="view">
-      <div class="page-section narrow">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">BUSINESS PROMOTION</p>
-            <h2>Promote Your Social Business</h2>
+  <div class="promote-shell">
+    <div class="promote-header">
+      <div class="promote-header-icon">🏪</div>
+      <div>
+        <h2>Promote Your Social Business</h2>
+        <p>Showcase your sustainable business to our community</p>
+      </div>
+    </div>
+
+    <div class="promote-grid">
+      <section class="promote-form-card">
+        <form id="businessForm">
+          <label class="promote-label">
+            <span>Business Name *</span>
+            <input id="businessName" type="text" placeholder="Enter your business name" required />
+          </label>
+
+          <label class="promote-label">
+            <span>Description *</span>
+            <textarea
+              id="businessDescription"
+              rows="6"
+              maxlength="500"
+              placeholder="Tell us about your social impact and what makes your business special..."
+              required
+            ></textarea>
+          </label>
+
+          <p class="promote-char-count"><span id="businessCharCount">0</span>/500 characters</p>
+
+          <div class="promote-label-group">
+            <span class="promote-group-title">Impact Category * (select all that apply)</span>
+
+            <div class="promote-category-grid">
+              <button class="promote-category-btn" type="button" data-category="Eco-Friendly">
+                <span class="cat-emoji">🌿</span>
+                <span>Eco-Friendly</span>
+              </button>
+
+              <button class="promote-category-btn" type="button" data-category="Fair Trade">
+                <span class="cat-emoji">🤝</span>
+                <span>Fair Trade</span>
+              </button>
+
+              <button class="promote-category-btn" type="button" data-category="Local">
+                <span class="cat-emoji">🏪</span>
+                <span>Local</span>
+              </button>
+
+              <button class="promote-category-btn" type="button" data-category="Sustainable">
+                <span class="cat-emoji">♻️</span>
+                <span>Sustainable</span>
+              </button>
+            </div>
+
+            <input id="businessCategory" type="hidden" required />
           </div>
-        </div>
 
-        <div class="two-col">
-          <form id="businessForm" class="form-card">
-            <label>
-              Business Name
-              <input id="businessName" type="text" placeholder="Enter your business name" required />
+          <div class="promote-label-group">
+            <span class="promote-group-title">Business Logo *</span>
+
+            <label class="promote-upload-box" for="businessLogo">
+              <input id="businessLogo" type="file" accept=".png,.jpg,.jpeg" hidden />
+              <div class="promote-upload-icon">⇪</div>
+              <div class="promote-upload-title">Click to upload business logo</div>
+              <div class="promote-upload-sub">PNG, JPG up to 5MB</div>
             </label>
+          </div>
 
-            <label>
-              Description
-              <textarea id="businessDescription" rows="5" placeholder="Tell us about your social impact..." required></textarea>
-            </label>
+          <button type="submit" id="businessSubmitBtn" class="promote-submit-btn" disabled>
+            Complete all fields to submit
+          </button>
 
-            <label>
-              Impact Category
-              <select id="businessCategory" required>
-                <option value="">Select a category</option>
-                <option value="Eco-Friendly">Eco-Friendly</option>
-                <option value="Fair Trade">Fair Trade</option>
-                <option value="Local">Local</option>
-              </select>
-            </label>
+          <p id="businessMsg" class="form-message"></p>
+        </form>
+      </section>
 
-            <button type="submit" class="btn btn-primary full">Submit for Review</button>
-            <p id="businessMsg" class="form-message"></p>
-          </form>
+      <aside class="promote-preview-column">
+        <h3 class="promote-preview-title">Live Preview</h3>
 
-          <aside class="preview-card">
-            <p class="eyebrow">PREVIEW</p>
-            <h3 id="previewBusinessName">Your Business Name</h3>
-            <span class="pill" id="previewBusinessCategory">Category</span>
+        <div class="promote-preview-card">
+          <div class="promote-preview-image" id="previewLogoArea">
+            <span class="preview-camera">📷</span>
+          </div>
+
+          <div class="promote-preview-body">
+            <div class="promote-preview-top">
+              <div>
+                <h4 id="previewBusinessName">Your Business Name</h4>
+                <span class="preview-pill" id="previewBusinessCategory">Select category</span>
+              </div>
+
+              <div class="preview-rating">⭐ 4.8</div>
+            </div>
+
             <p id="previewBusinessDescription">
               Your business description will appear here...
             </p>
-            <div class="preview-foot">
-             <!-- <span>⭐ 4.8</span>
-              <span>+15% Growth</span> -->
+
+            <div class="promote-preview-footer">
+              <span>↗ Growing</span>
+              <span>🏪 Verified</span>
             </div>
-          </aside>
+          </div>
         </div>
-      </div>
-    </section> 
+
+        <div class="promote-tips-card">
+          <h4>💡 Pro Tips</h4>
+          <ul>
+            <li>Businesses with complete profiles get <strong>3x more engagement</strong></li>
+            <li>Include specific impact metrics in your description</li>
+            <li>High-quality logos increase trust by 65%</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
 
     <!-- business directory -->
     <section id="businessDirectoryView" class="view">

@@ -717,19 +717,84 @@ function handleBusinessSubmit(event) {
 }
 
 function updateBusinessPreview() {
-  if (!exists("previewBusinessName")) return;
+  const name = exists("businessName")
+    ? $("businessName").value.trim() || "Your Business Name"
+    : "Your Business Name";
 
-  const name = exists("businessName") ? $("businessName").value.trim() || "Your Business Name" : "Your Business Name";
   const description = exists("businessDescription")
     ? $("businessDescription").value.trim() || "Your business description will appear here..."
     : "Your business description will appear here...";
-  const category = exists("businessCategory")
-    ? $("businessCategory").value || "Category"
-    : "Category";
 
-  $("previewBusinessName").textContent = name;
+  const category = exists("businessCategory")
+    ? $("businessCategory").value || "Select category"
+    : "Select category";
+
+  if (exists("previewBusinessName")) $("previewBusinessName").textContent = name;
   if (exists("previewBusinessDescription")) $("previewBusinessDescription").textContent = description;
   if (exists("previewBusinessCategory")) $("previewBusinessCategory").textContent = category;
+
+  if (exists("businessCharCount") && exists("businessDescription")) {
+    $("businessCharCount").textContent = $("businessDescription").value.length;
+  }
+
+  updateBusinessSubmitState();
+}
+
+function updateBusinessSubmitState() {
+  if (!exists("businessSubmitBtn")) return;
+
+  const name = exists("businessName") ? $("businessName").value.trim() : "";
+  const description = exists("businessDescription") ? $("businessDescription").value.trim() : "";
+  const category = exists("businessCategory") ? $("businessCategory").value.trim() : "";
+  const hasLogo = exists("businessLogo") ? $("businessLogo").files.length > 0 : false;
+
+  const ready = !!(name && description && category && hasLogo);
+
+  $("businessSubmitBtn").disabled = !ready;
+  $("businessSubmitBtn").classList.toggle("enabled", ready);
+  $("businessSubmitBtn").textContent = ready
+    ? "Submit for Review"
+    : "Complete all fields to submit";
+}
+
+function setupBusinessCategoryButtons() {
+  document.querySelectorAll(".promote-category-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      document.querySelectorAll(".promote-category-btn").forEach((btn) => {
+        btn.classList.remove("active");
+      });
+
+      button.classList.add("active");
+
+      if (exists("businessCategory")) {
+        $("businessCategory").value = button.dataset.category;
+      }
+
+      updateBusinessPreview();
+    });
+  });
+}
+
+function setupBusinessLogoPreview() {
+  if (!exists("businessLogo") || !exists("previewLogoArea")) return;
+
+  $("businessLogo").addEventListener("change", (event) => {
+    const file = event.target.files[0];
+
+    if (!file) {
+      $("previewLogoArea").innerHTML = '<span class="preview-camera">📷</span>';
+      updateBusinessSubmitState();
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      $("previewLogoArea").innerHTML = `<img src="${reader.result}" alt="Business logo preview" class="preview-logo-image">`;
+    };
+    reader.readAsDataURL(file);
+
+    updateBusinessSubmitState();
+  });
 }
 
 function handleLogout() {
@@ -923,7 +988,7 @@ function bindEvents() {
 
   if (exists("businessForm")) $("businessForm").addEventListener("submit", handleBusinessSubmit);
   if (exists("businessName")) $("businessName").addEventListener("input", updateBusinessPreview);
-  if (exists("businessDescription")) $("businessDescription").addEventListener("input", updateBusinessPreview);
+if (exists("businessDescription")) $("businessDescription").addEventListener("input", updateBusinessPreview);
   if (exists("businessCategory")) $("businessCategory").addEventListener("change", updateBusinessPreview);
 
   if (exists("interestContinueBtn")) {
@@ -955,6 +1020,8 @@ function bindEvents() {
   setupFilters();
   setupViewButtons();
   setupMenuToggle();
+  setupBusinessCategoryButtons();
+  setupBusinessLogoPreview();
 }
 
 function init() {
