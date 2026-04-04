@@ -206,6 +206,8 @@ function showView(viewId) {
   target.classList.add("active");
   appState.currentView = viewId;
 
+  renderNav();
+
   window.scrollTo({ top: 0, behavior: "smooth" });
 
   if (viewId === "dashboardView") {
@@ -247,9 +249,11 @@ function renderNav() {
 
   nav.innerHTML = "";
 
-  const addButton = (label, onClick, className = "nav-link") => {
+  const isActiveView = (viewIds) => viewIds.includes(appState.currentView);
+
+  const addButton = (label, onClick, className = "nav-link", isActive = false) => {
     const btn = document.createElement("button");
-    btn.className = className;
+    btn.className = `${className}${isActive ? " active" : ""}`;
     btn.textContent = label;
     btn.type = "button";
     btn.addEventListener("click", () => {
@@ -259,10 +263,20 @@ function renderNav() {
     nav.appendChild(btn);
   };
 
-  addButton("Home", () => showView("landingView"));
+  addButton(
+    "Home",
+    () => showView("landingView"),
+    "nav-link",
+    isActiveView(["landingView", "interestSelectionView", "interestSummaryView"])
+  );
 
   if (exists("businessDirectoryView")) {
-    addButton("Explore Businesses", () => showView("businessDirectoryView"));
+    addButton(
+      "Business Directory",
+      () => showView("businessDirectoryView"),
+      "nav-link",
+      isActiveView(["businessDirectoryView", "promoteBusinessView"])
+    );
   }
 
   if (appState.currentUser) {
@@ -317,10 +331,15 @@ function renderNav() {
     dropdown.appendChild(menu);
     nav.appendChild(dropdown);
   } else {
-    addButton("Sign In / Register", () => {
-      showView("authView");
-      setAuthMode("login");
-    }, "nav-button");
+    addButton(
+      "Join Impact Hub",
+      () => {
+        showView("authView");
+        setAuthMode("login");
+      },
+      "nav-button",
+      isActiveView(["authView"])
+    );
   }
 }
 
@@ -1094,6 +1113,30 @@ if (exists("businessDescription")) $("businessDescription").addEventListener("in
   document.querySelectorAll(".interest-card").forEach((card) => {
     card.addEventListener("click", toggleInterestSelection);
   });
+
+  if (exists("browseCampaignsCue")) {
+  const handleBrowseCue = () => {
+    const causesSection = $("causesSection");
+    if (!causesSection) return;
+
+    const headerOffset = 96;
+    const targetY =
+      causesSection.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+
+    window.scrollTo({
+      top: targetY,
+      behavior: "smooth"
+    });
+  };
+
+  $("browseCampaignsCue").addEventListener("click", handleBrowseCue);
+  $("browseCampaignsCue").addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      handleBrowseCue();
+    }
+  });
+}
 
   setupFilters();
   setupViewButtons();
