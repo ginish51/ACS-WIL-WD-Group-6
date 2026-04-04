@@ -430,22 +430,97 @@ function renderBusinesses() {
 
   businessGrid.innerHTML = "";
 
-  const allBusinesses = [...starterBusinesses, ...appState.businesses];
+  const allBusinesses = [
+    {
+      name: "EcoGreen Essentials",
+      category: "Eco-Friendly",
+      description: "Sustainable home products made from recycled materials",
+      trending: "2.3K",
+      rating: "4.9",
+      image: "images/business-eco.jpg"
+    },
+    {
+      name: "Local Harvest Co-op",
+      category: "Fair Trade",
+      description: "Supporting local farmers with organic produce",
+      trending: "1.8K",
+      rating: "4.8",
+      image: "images/business-harvest.jpg"
+    },
+    {
+      name: "Mindful Market",
+      category: "Local",
+      description: "Handcrafted goods supporting artisan communities",
+      trending: "1.5K",
+      rating: "4.7",
+      image: "images/business-mindful.jpg"
+    },
+    {
+      name: "BlueSky Goods",
+      category: "Sustainable",
+      description: "Eco-conscious product collections for everyday living",
+      trending: "1.4K",
+      rating: "4.9",
+      image: "images/business-sky.jpg"
+    },
+    {
+      name: "Urban Roots Studio",
+      category: "Local",
+      description: "Creative local products with community-driven impact",
+      trending: "980",
+      rating: "4.6",
+      image: "images/business-urban.jpg"
+    },
+    {
+      name: "Heritage Fair Finds",
+      category: "Fair Trade",
+      description: "Responsible sourcing and ethically made store selections",
+      trending: "1.2K",
+      rating: "4.8",
+      image: "images/business-heritage.jpg"
+    },
+    ...appState.businesses
+  ];
 
-  allBusinesses.forEach((business) => {
+  const searchValue = exists("businessSearchInput")
+    ? $("businessSearchInput").value.trim().toLowerCase()
+    : "";
+
+  const filteredBusinesses = allBusinesses.filter((business) => {
+    return (
+      !searchValue ||
+      business.name.toLowerCase().includes(searchValue) ||
+      business.category.toLowerCase().includes(searchValue) ||
+      business.description.toLowerCase().includes(searchValue)
+    );
+  });
+
+  if (exists("businessCountText")) {
+    $("businessCountText").textContent = `${filteredBusinesses.length} business${filteredBusinesses.length !== 1 ? "es" : ""} found`;
+  }
+
+  filteredBusinesses.forEach((business) => {
     const card = document.createElement("article");
-    card.className = "business-card";
+    card.className = "business-directory-card";
 
     card.innerHTML = `
-      <div class="card-image"></div>
-      <div class="card-body">
-        <span class="card-category">${business.category}</span>
-        <h3>${business.name}</h3>
-        <p>${business.description}</p>
-        <div class="card-meta">
-          <span></span>
-          <span>${business.trending || "New Listing"}</span>
+      <div class="business-directory-image-wrap">
+        <div class="business-directory-image" style="background-image: url('${business.image || ""}');"></div>
+        <div class="business-rating-badge">⭐ ${business.rating || "4.8"}</div>
+        <button class="business-fav-btn" type="button">♡</button>
+      </div>
+
+      <div class="business-directory-body">
+        <h3 class="business-directory-title">${business.name}</h3>
+        <span class="business-category-pill">${business.category}</span>
+        <p class="business-directory-description">${business.description}</p>
+
+        <div class="business-directory-meta-row">
+          <span>⍟ ${business.trending || "1.0K"}</span>
+          <span class="business-trending">↗ Trending</span>
         </div>
+
+        <button class="business-visit-btn" type="button">↗ Visit Store</button>
       </div>
     `;
 
@@ -990,6 +1065,9 @@ function bindEvents() {
   if (exists("businessName")) $("businessName").addEventListener("input", updateBusinessPreview);
 if (exists("businessDescription")) $("businessDescription").addEventListener("input", updateBusinessPreview);
   if (exists("businessCategory")) $("businessCategory").addEventListener("change", updateBusinessPreview);
+  if (exists("businessSearchInput")) {
+  $("businessSearchInput").addEventListener("input", renderBusinesses);
+}
 
   if (exists("interestContinueBtn")) {
     $("interestContinueBtn").addEventListener("click", handleInterestContinue);

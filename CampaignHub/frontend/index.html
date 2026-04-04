@@ -577,18 +577,45 @@
 </section>
 
     <!-- business directory -->
-    <section id="businessDirectoryView" class="view">
-      <div class="page-section">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">DIRECTORY</p>
-            <h2>Social Impact Businesses</h2>
-          </div>
+<section id="businessDirectoryView" class="view">
+  <div class="business-directory-shell">
+    <div class="business-directory-topbar">
+      <div class="business-directory-heading">
+        <div class="business-directory-icon">🏪</div>
+        <div>
+          <h2>Social Impact Businesses</h2>
+          <p>Support businesses making a positive difference</p>
         </div>
-
-        <div id="businessGrid" class="card-grid"></div>
       </div>
-    </section> 
+
+      <button class="business-directory-promote-btn" data-target="promoteBusinessView" type="button">
+        <span>🏪</span>
+        <span>Promote Your Business</span>
+      </button>
+    </div>
+
+    <div class="business-directory-toolbar">
+      <div class="business-directory-search-wrap">
+        <span class="business-directory-search-icon">⌕</span>
+        <input
+          id="businessSearchInput"
+          class="business-directory-search-input"
+          type="text"
+          placeholder="Search businesses..."
+        />
+      </div>
+
+      <button class="business-directory-filter-btn" type="button">
+        <span>⟟</span>
+        <span>Filters</span>
+      </button>
+    </div>
+
+    <p id="businessCountText" class="business-count-text">6 businesses found</p>
+
+    <div id="businessGrid" class="business-directory-grid"></div>
+  </div>
+</section>
 
     <!-- dashboard -->
     <section id="dashboardView" class="view">
