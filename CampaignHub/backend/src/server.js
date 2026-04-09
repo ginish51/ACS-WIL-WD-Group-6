@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-app.use(cors());
-app.use(express.json());
-=======
->>>>>>> fddbe34d14b70d0c6e3cebba414bd7f8bd57644e
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -21,11 +16,7 @@ app.get("/", (req, res) => {
 
 // health check
 app.get("/api/health", (req, res) => {
-<<<<<<< HEAD
     res.json({ status: "ok", database: "connected" });
-=======
-  res.json({ status: "ok", message: "Server is accessible!" });
->>>>>>> fddbe34d14b70d0c6e3cebba414bd7f8bd57644e
 });
 
 // auth routes
