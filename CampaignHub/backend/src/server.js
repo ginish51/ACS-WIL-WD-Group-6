@@ -1,5 +1,4 @@
 require("dotenv").config();
-const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const db = require("./config/db");
@@ -9,6 +8,11 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+// optional root route for checking backend in browser
+app.get("/", (req, res) => {
+  res.send("<h1>Impact Hub API is Running!</h1>");
+});
 
 // health check
 app.get("/api/health", (req, res) => {
@@ -43,13 +47,6 @@ app.get("/api/campaigns", (req, res) => {
     if (err) return res.status(500).json({ message: err.message });
     res.json(rows);
   });
-});
-
-// serve frontend
-app.use(express.static(path.join(__dirname, "../../frontend")));
-
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../../frontend", "index.html"));
 });
 
 const PORT = process.env.PORT || 5000;
