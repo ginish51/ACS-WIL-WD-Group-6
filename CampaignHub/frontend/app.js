@@ -1,4 +1,4 @@
-const API_BASE = "https://impact-hub-u6ew.onrender.com";
+const API_BASE = "https://impacthub06.onrender.com";
 
 const appState = {
   currentView: "landingView",
