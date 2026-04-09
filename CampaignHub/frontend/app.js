@@ -1,4 +1,4 @@
-const API_BASE = window.location.origin;
+const API_BASE = "https://impact-hub-u6ew.onrender.com";
 
 const appState = {
   currentView: "landingView",
