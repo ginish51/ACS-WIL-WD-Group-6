@@ -9,20 +9,19 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// optional root route for checking backend in browser
 app.get("/", (req, res) => {
   res.send("<h1>Impact Hub API is Running!</h1>");
 });
 
-// health check
 app.get("/api/health", (req, res) => {
-    res.json({ status: "ok", database: "connected" });
+  res.json({
+    status: "ok",
+    message: "Server is accessible!"
+  });
 });
 
-// auth routes
 app.use("/api/auth", authRoutes);
 
-// business route
 app.post("/api/business-register", (req, res) => {
   const { user_id, business_name, abn, industry } = req.body;
   const sql = `INSERT INTO businesses (user_id, business_name, abn, industry) VALUES (?, ?, ?, ?)`;
@@ -33,7 +32,6 @@ app.post("/api/business-register", (req, res) => {
   });
 });
 
-// users route
 app.get("/api/users", (req, res) => {
   db.all("SELECT id, name, email FROM users", [], (err, rows) => {
     if (err) return res.status(500).json({ message: err.message });
@@ -41,7 +39,6 @@ app.get("/api/users", (req, res) => {
   });
 });
 
-// campaigns route
 app.get("/api/campaigns", (req, res) => {
   db.all("SELECT * FROM campaigns", [], (err, rows) => {
     if (err) return res.status(500).json({ message: err.message });

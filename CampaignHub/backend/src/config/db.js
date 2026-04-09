@@ -37,12 +37,19 @@ db.serialize(() => {
     title TEXT NOT NULL,
     description TEXT,
     category TEXT,
+    image_url TEXT,
     goal_amount REAL,
     current_amount REAL DEFAULT 0,
     creator_id INTEGER,
     status TEXT DEFAULT 'active',
     FOREIGN KEY (creator_id) REFERENCES users (id)
   )`);
+
+  db.run(`ALTER TABLE campaigns ADD COLUMN image_url TEXT`, (err) => {
+    if (err && !err.message.includes("duplicate column name")) {
+      console.error("Add image_url column error:", err.message);
+    }
+  });
 
   db.get("SELECT COUNT(*) AS count FROM campaigns", (err, row) => {
     if (err) {
@@ -53,8 +60,14 @@ db.serialize(() => {
     if (row && row.count === 0) {
       console.log("Empty campaigns table detected. Inserting sample data...");
       db.run(
-        "INSERT INTO campaigns (title, description, category) VALUES (?, ?, ?)",
-        ["Live Ocean Cleanup", "Help us save the reefs!", "Environment"]
+        `INSERT INTO campaigns (title, description, category, image_url)
+         VALUES (?, ?, ?, ?)`,
+        [
+          "Live Ocean Cleanup",
+          "Help us save the reefs!",
+          "Environment",
+          "images/ocean.jpg"
+        ]
       );
     }
   });
