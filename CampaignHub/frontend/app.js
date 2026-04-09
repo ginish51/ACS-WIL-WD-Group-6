@@ -1,5 +1,5 @@
 const API_BASE = window.location.origin;
-
+const API_URL = "https://acs-wil-wd-group-6.onrender.com/api";
 const appState = {
   currentView: "landingView",
   authMode: "login",
@@ -578,6 +578,11 @@ function setAuthMode(mode) {
       ? "Log in to continue your impact journey."
       : "Register to start making an impact.";
   }
+}
+async function loadCampaigns() {
+    const response = await fetch(`${API_URL}/campaigns`);
+    const data = await response.json();
+    console.log("Data from backend:", data); // Check console for this!
 }
 
 async function apiRequest(path, options = {}) {

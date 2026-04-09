@@ -1,3 +1,4 @@
+app.use(cors());
 app.use(express.json());
 require("dotenv").config();
 const express = require("express");
@@ -24,7 +25,7 @@ app.get("/", (req, res) => {
 // 2. ROUTES
 // Health check to test if 403 is gone
 app.get("/api/health", (req, res) => {
-    res.json({ status: "ok", message: "Server is accessible!" });
+    res.json({ status: "ok", database: "connected" });
 });
 
 // Registration Route
