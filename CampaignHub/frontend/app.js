@@ -6,13 +6,12 @@ const appState = {
   currentUser: getStoredUser(),
   token: localStorage.getItem("token") || null,
   joinedCampaigns: JSON.parse(localStorage.getItem("joinedCampaigns") || "[]"),
-  businesses: JSON.parse(localStorage.getItem("businesses") || "[]"),
+  businesses: [],
   campaigns: [],
   selectedCause: null,
   activeCauseFilter: "all",
   selectedInterests: []
 };
-
 
 function $(id) {
   return document.getElementById(id);
@@ -50,10 +49,6 @@ function clearSession() {
 
 function saveJoinedCampaigns() {
   localStorage.setItem("joinedCampaigns", JSON.stringify(appState.joinedCampaigns));
-}
-
-function saveBusinesses() {
-  localStorage.setItem("businesses", JSON.stringify(appState.businesses));
 }
 
 function isValidEmail(email) {
@@ -257,20 +252,20 @@ function renderCauses() {
     ? $("causeSearchInput").value.trim().toLowerCase()
     : "";
 
-const filteredCauses = appState.campaigns.filter((cause) => {
-  const category = (cause.category || "").toLowerCase();
+  const filteredCauses = appState.campaigns.filter((cause) => {
+    const category = (cause.category || "").toLowerCase();
 
-  const matchesFilter =
-    appState.activeCauseFilter === "all" || category === appState.activeCauseFilter;
+    const matchesFilter =
+      appState.activeCauseFilter === "all" || category === appState.activeCauseFilter;
 
-  const matchesSearch =
-    !searchValue ||
-    (cause.title || "").toLowerCase().includes(searchValue) ||
-    (cause.category || "").toLowerCase().includes(searchValue) ||
-    (cause.description || "").toLowerCase().includes(searchValue);
+    const matchesSearch =
+      !searchValue ||
+      (cause.title || "").toLowerCase().includes(searchValue) ||
+      (cause.category || "").toLowerCase().includes(searchValue) ||
+      (cause.description || "").toLowerCase().includes(searchValue);
 
-  return matchesFilter && matchesSearch;
-});
+    return matchesFilter && matchesSearch;
+  });
 
   if (exists("causeCountText")) {
     $("causeCountText").textContent = `${filteredCauses.length} cause${filteredCauses.length !== 1 ? "s" : ""} found`;
@@ -285,46 +280,28 @@ const filteredCauses = appState.campaigns.filter((cause) => {
     poverty: "◫"
   };
 
-  const projectCounts = {
-    community: 24,
-    environment: 18,
-    education: 15,
-    equality: 12,
-    health: 20,
-    poverty: 9
-  };
-
-  const activeCounts = {
-    community: "1.2K",
-    environment: "890",
-    education: "650",
-    equality: "540",
-    health: "980",
-    poverty: "420"
-  };
-
   filteredCauses.forEach((cause) => {
     const card = document.createElement("article");
     card.className = "cause-directory-card";
 
-card.innerHTML = `
-  <div class="cause-directory-image-wrap">
-    <div class="cause-directory-image" style="background-image: url('${cause.image_url || "images/community.jpg"}');"></div>
-    <div class="cause-directory-badge badge-${(cause.category || "community").toLowerCase()}">
-      ${categoryIcons[(cause.category || "community").toLowerCase()] || "•"}
-    </div>
-    <button class="cause-fav-btn" type="button">♡</button>
-  </div>
+    card.innerHTML = `
+      <div class="cause-directory-image-wrap">
+        <div class="cause-directory-image" style="background-image: url('${cause.image_url || "images/community.jpg"}');"></div>
+        <div class="cause-directory-badge badge-${(cause.category || "community").toLowerCase()}">
+          ${categoryIcons[(cause.category || "community").toLowerCase()] || "•"}
+        </div>
+        <button class="cause-fav-btn" type="button">♡</button>
+      </div>
 
-  <div class="cause-directory-body">
-    <h3 class="cause-directory-title">${cause.title || "Untitled Campaign"}</h3>
+      <div class="cause-directory-body">
+        <h3 class="cause-directory-title">${cause.title || "Untitled Campaign"}</h3>
 
-    <div class="cause-directory-meta">
-      <span class="cause-meta-pill">📂 ${cause.category || "General"}</span>
-      <span class="cause-meta-pill">💰 Goal: ${cause.goal_amount ?? 0}</span>
-    </div>
-  </div>
-`;
+        <div class="cause-directory-meta">
+          <span class="cause-meta-pill">📂 ${cause.category || "General"}</span>
+          <span class="cause-meta-pill">💰 Goal: ${cause.goal_amount ?? 0}</span>
+        </div>
+      </div>
+    `;
 
     card.addEventListener("click", () => openCauseDetail(cause.id));
     causeGrid.appendChild(card);
@@ -337,28 +314,16 @@ function openCauseDetail(causeId) {
 
   appState.selectedCause = cause;
 
-if (exists("detailCategory")) $("detailCategory").textContent = cause.category || "General";
-if (exists("detailTitle")) $("detailTitle").textContent = cause.title || "Untitled Campaign";
-if (exists("detailDescription")) $("detailDescription").textContent = cause.description || "No description available.";
-if (exists("detailDate")) $("detailDate").textContent = "Ongoing Campaign";
-if (exists("detailLocation")) $("detailLocation").textContent = "Online / Community";
-if (exists("detailParticipants")) {
-  $("detailParticipants").textContent = `Raised: ${cause.current_amount ?? 0}`;
-}
+  if (exists("detailCategory")) $("detailCategory").textContent = cause.category || "General";
+  if (exists("detailTitle")) $("detailTitle").textContent = cause.title || "Untitled Campaign";
+  if (exists("detailDescription")) $("detailDescription").textContent = cause.description || "No description available.";
+  if (exists("detailDate")) $("detailDate").textContent = "Ongoing Campaign";
+  if (exists("detailLocation")) $("detailLocation").textContent = "Online / Community";
+  if (exists("detailParticipants")) {
+    $("detailParticipants").textContent = `Raised: ${cause.current_amount ?? 0}`;
+  }
 
   showView("causeDetailView");
-}
-
-async function loadBusinesses() {
-  try {
-    const businesses = await apiRequest("/api/businesses");
-    appState.businesses = Array.isArray(businesses) ? businesses : [];
-    renderBusinesses();
-  } catch (error) {
-    console.error("Failed to load businesses:", error);
-    appState.businesses = [];
-    renderBusinesses();
-  }
 }
 
 function renderBusinesses() {
@@ -518,6 +483,18 @@ async function loadCampaigns() {
   }
 }
 
+async function loadBusinesses() {
+  try {
+    const businesses = await apiRequest("/api/businesses");
+    appState.businesses = Array.isArray(businesses) ? businesses : [];
+    renderBusinesses();
+  } catch (error) {
+    console.error("Failed to load businesses:", error);
+    appState.businesses = [];
+    renderBusinesses();
+  }
+}
+
 async function apiRequest(path, options = {}) {
   const headers = {
     "Content-Type": "application/json",
@@ -570,12 +547,12 @@ async function handleLogin(event) {
     });
 
     if (!data.token || !data.user) {
-  throw new Error("Login response was missing token or user.");
-}
+      throw new Error("Login response was missing token or user.");
+    }
 
-saveSession(data.token, data.user);
-appState.selectedInterests = loadSelectedInterests(data.user);
-renderNav();
+    saveSession(data.token, data.user);
+    appState.selectedInterests = loadSelectedInterests(data.user);
+    renderNav();
 
     if (hasSelectedInterests()) {
       renderInterestSummary();
@@ -697,35 +674,41 @@ async function handleBusinessSubmit(event) {
     return;
   }
 
-  const business_name = exists("businessName") ? $("businessName").value.trim() : "";
+  const businessName = exists("businessName") ? $("businessName").value.trim() : "";
   const description = exists("businessDescription") ? $("businessDescription").value.trim() : "";
-  const category = exists("businessCategory") ? $("businessCategory").value : "";
+  const category = exists("businessCategory") ? $("businessCategory").value.trim() : "";
+  const logoFile = exists("businessLogo") ? $("businessLogo").files[0] : null;
 
   if (exists("businessMsg")) $("businessMsg").textContent = "";
 
-  if (!business_name || !description || !category) {
+  if (!businessName || !description || !category || !logoFile) {
     if (exists("businessMsg")) {
-      $("businessMsg").textContent = "Please complete all business fields.";
+      $("businessMsg").textContent = "Please complete all business fields and upload a logo.";
     }
     return;
   }
 
-  const payload = {
-    user_id: appState.currentUser?.id || null,
-    business_name,
-    category,
-    description,
-    industry: category,
-    image_url: "images/business-eco.jpg",
-    rating: 4.8,
-    trending: "New"
-  };
-
   try {
-    await apiRequest("/api/businesses", {
+    const formData = new FormData();
+    formData.append("user_id", appState.currentUser.id || "");
+    formData.append("business_name", businessName);
+    formData.append("category", category);
+    formData.append("description", description);
+    formData.append("industry", category);
+    formData.append("rating", "4.8");
+    formData.append("trending", "New");
+    formData.append("image", logoFile);
+
+    const response = await fetch(`${API_BASE}/api/businesses`, {
       method: "POST",
-      body: JSON.stringify(payload)
+      body: formData
     });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to submit business.");
+    }
 
     if (exists("businessMsg")) {
       $("businessMsg").textContent = "Business submitted successfully.";
@@ -739,8 +722,12 @@ async function handleBusinessSubmit(event) {
 
     if (exists("businessCategory")) $("businessCategory").value = "";
 
+    if (exists("previewLogoArea")) {
+      $("previewLogoArea").innerHTML = '<span class="preview-camera">📷</span>';
+    }
+
     updateBusinessPreview();
-    loadBusinesses();
+    await loadBusinesses();
     showView("businessDirectoryView");
   } catch (error) {
     if (exists("businessMsg")) {
