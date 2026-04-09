@@ -1,58 +1,72 @@
+app.use(express.json());
 require("dotenv").config();
-const path = require("path");
 const express = require("express");
 const cors = require("cors");
+
 const db = require("./config/db");
-const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+// 1. MIDDLEWARE (The order is very important!)
+//app.use(cors()); // Allow all connections for now
+// Add this right after 'const app = express();'
+app.use(cors({
+  origin: '*', // This tells the server to allow requests from ANYWHERE (fixes 403)
+  methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH']
+}));
 
-// health check
+// Add a very simple route to test the connection
+app.get("/", (req, res) => {
+    res.send("<h1>Impact Hub API is Running!</h1>");
+});
+ // Allow the server to read JSON data
+
+// 2. ROUTES
+// Health check to test if 403 is gone
 app.get("/api/health", (req, res) => {
-  res.json({ status: "ok", message: "Server is accessible!" });
+    res.json({ status: "ok", message: "Server is accessible!" });
 });
 
-// auth routes
-app.use("/api/auth", authRoutes);
-
-// business route
+// Registration Route
+app.post("/api/register", (req, res) => {
+    const { name, email, password } = req.body;
+    const sql = `INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)`;
+    
+    db.run(sql, [name, email, password], function(err) {
+        if (err) return res.status(400).json({ error: err.message });
+        res.json({ message: "User registered successfully!", id: this.lastID });
+    });
+});
 app.post("/api/business-register", (req, res) => {
-  const { user_id, business_name, abn, industry } = req.body;
-  const sql = `INSERT INTO businesses (user_id, business_name, abn, industry) VALUES (?, ?, ?, ?)`;
-
-  db.run(sql, [user_id, business_name, abn, industry], function (err) {
-    if (err) return res.status(400).json({ message: err.message });
-    res.json({ message: "Business details saved!", id: this.lastID });
-  });
+    const { user_id, business_name, abn, industry } = req.body;
+    const sql = `INSERT INTO businesses (user_id, business_name, abn, industry) VALUES (?, ?, ?, ?)`;
+    
+    db.run(sql, [user_id, business_name, abn, industry], function(err) {
+        if (err) return res.status(400).json({ error: err.message });
+        res.json({ message: "Business details saved!", id: this.lastID });
+    });
 });
-
-// users route
+// User List Route (to verify the database)
 app.get("/api/users", (req, res) => {
-  db.all("SELECT id, name, email FROM users", [], (err, rows) => {
-    if (err) return res.status(500).json({ message: err.message });
-    res.json(rows);
-  });
+    db.all("SELECT id, name, email FROM users", [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
 });
-
-// campaigns route
 app.get("/api/campaigns", (req, res) => {
-  db.all("SELECT * FROM campaigns", [], (err, rows) => {
-    if (err) return res.status(500).json({ message: err.message });
-    res.json(rows);
-  });
+    db.all("SELECT * FROM campaigns", [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        
+        // If the array is empty, tell the teammate explicitly
+        if (rows.length === 0) {
+            return res.status(200).json({ message: "No campaigns found", data: [] });
+        }
+        
+        res.json(rows);
+    });
 });
-
-// serve frontend
-app.use(express.static(path.join(__dirname, "../frontend")));
-
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend", "index.html"));
-});
-
+// 3. START SERVER
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server is running on port ${PORT}`);
+    console.log(`🚀 Server is flying on http://localhost:${PORT}`);
 });

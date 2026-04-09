@@ -2,62 +2,29 @@ const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
 
 // This ensures the database file is created in the right spot
-const DB_FILE = path.join(__dirname, "../../campaignhub.db");
+const dbPath = path.resolve(__dirname, '../../campaignhub.db');
 
-const db = new sqlite3.Database(DB_FILE, (err) => {
-    if (err) console.error("Database opening error:", err.message);
-    else console.log("Connected to SQLite database.");
+const db = new sqlite3.Database(dbPath, (err) => {
+    if (err) console.error("Database opening error: ", err);
+    else console.log("Connected to SQLite database at: ", dbPath);
 });
-
 db.serialize(() => {
-    // 1. Users Table (Includes 'state' and 'role')
-    db.run(`CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        email TEXT UNIQUE NOT NULL,
-        password_hash TEXT NOT NULL,
-        state TEXT, 
-        role TEXT DEFAULT 'user', -- e.g., 'individual', 'business', 'admin'
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )`);
-
-    // 2. Business Details Table (Linked to a User)
-    db.run(`CREATE TABLE IF NOT EXISTS businesses (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        business_name TEXT,
-        abn TEXT,
-        industry TEXT,
-        website TEXT,
-        FOREIGN KEY (user_id) REFERENCES users (id)
-    )`);
-
-    // 3. Campaign Details Table
+    // Create Table
     db.run(`CREATE TABLE IF NOT EXISTS campaigns (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
+        title TEXT,
         description TEXT,
-        category TEXT, -- e.g., 'Environment', 'Education'
-        goal_amount REAL,
-        current_amount REAL DEFAULT 0,
-        creator_id INTEGER,
-        status TEXT DEFAULT 'active', -- 'active', 'completed', 'paused'
-        FOREIGN KEY (creator_id) REFERENCES users (id)
+        category TEXT
     )`);
-    db.get("SELECT count(*) as count FROM campaigns", (err, row) => {
-        if (row.count === 0) {
-            console.log("Database empty. Seeding test data...");
-            db.run(`INSERT INTO campaigns (title, description, category, image_url) 
-                    VALUES ('Clean Ocean Initiative', 'Cleaning local beaches.', 'Environment', 'https://images.unsplash.com/photo-1484503781912-7c4a065757d4')`);
+
+    // IMMEDIATELY CHECK IF EMPTY AND INSERT
+    db.get("SELECT COUNT(*) AS count FROM campaigns", (err, row) => {
+        if (row && row.count === 0) {
+            console.log("Empty DB detected. Inserting sample data...");
+            db.run("INSERT INTO campaigns (title, description, category) VALUES (?, ?, ?)", 
+                   ["Live Ocean Cleanup", "Help us save the reefs!", "Environment"]);
         }
     });
-    db.get("SELECT count(*) as count FROM campaigns", (err, row) => {
-    if (row && row.count === 0) {
-        console.log("Database is empty! Inserting seed data...");
-        db.run(`INSERT INTO campaigns (title, description, category) 
-                VALUES ('First Test Campaign', 'If you see this, the backend is working!', 'Community')`);
-    }
-});
 });
 
 module.exports = db;
