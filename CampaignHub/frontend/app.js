@@ -1,5 +1,5 @@
 const API_BASE = window.location.origin;
-const API_URL = "https://acs-wil-wd-group-6.onrender.com/api";
+
 const appState = {
   currentView: "landingView",
   authMode: "login",
