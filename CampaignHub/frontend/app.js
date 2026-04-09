@@ -631,9 +631,13 @@ async function handleLogin(event) {
       body: JSON.stringify({ email, password })
     });
 
-    saveSession(data.token, data.user);
-    appState.selectedInterests = loadSelectedInterests(data.user);
-    renderNav();
+    if (!data.token || !data.user) {
+  throw new Error("Login response was missing token or user.");
+}
+
+saveSession(data.token, data.user);
+appState.selectedInterests = loadSelectedInterests(data.user);
+renderNav();
 
     if (hasSelectedInterests()) {
       renderInterestSummary();

@@ -120,12 +120,15 @@ router.post("/login", async (req, res, next) => {
 
     const token = signToken(safeUser);
 
+    console.log("LOGIN SUCCESS:", safeUser);
+
     return res.json({
       message: "Login successful.",
       token,
       user: safeUser
     });
   } catch (error) {
+    console.error("LOGIN ERROR:", error);
     next(error);
   }
 });
