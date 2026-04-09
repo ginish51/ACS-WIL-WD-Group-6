@@ -1,3 +1,5 @@
+console.log("AUTH ROUTES FILE LOADED");
+
 const express = require("express");
 const bcrypt = require("bcrypt");
 const db = require("../config/db");

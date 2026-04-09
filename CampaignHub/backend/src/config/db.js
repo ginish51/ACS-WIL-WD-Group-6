@@ -1,10 +1,10 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const sqlite3 = require("sqlite3").verbose();
+const path = require("path");
 
-// 1. Set the Path (Only do this ONCE)
+// 1. Set the Path - This places the DB in your 'backend' folder
 const dbPath = path.resolve(__dirname, '../../campaignhub.db');
 
-// 2. Connect to Database (Only do this ONCE)
+// 2. Connect to Database
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
         console.error("Database opening error:", err.message);
@@ -37,7 +37,7 @@ db.serialize(() => {
         FOREIGN KEY (user_id) REFERENCES users (id)
     )`);
 
-    // Create Campaigns Table (Included image_url)
+    // Create Campaigns Table
     db.run(`CREATE TABLE IF NOT EXISTS campaigns (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
@@ -51,15 +51,22 @@ db.serialize(() => {
         FOREIGN KEY (creator_id) REFERENCES users (id)
     )`);
 
-    // 4. EMERGENCY SEED: If campaigns table is empty, add data!
-    db.get("SELECT COUNT(*) AS count FROM campaigns", (err, row) => {
-        if (err) {
-            console.error("Count campaigns error:", err.message);
-            return;
-        }
-
+    // 4. SEED TEST USER (Crucial for Login testing)
+    db.get("SELECT COUNT(*) AS count FROM users", (err, row) => {
         if (row && row.count === 0) {
-            console.log("Empty campaigns table detected. Seeding sample data...");
+            console.log("No users found. Seeding test account...");
+            // Use a simple password for testing: 'password123'
+            db.run(
+                "INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)",
+                ["Test Admin", "admin@impact.com", "password123", "admin"]
+            );
+        }
+    });
+
+    // 5. SEED CAMPAIGNS
+    db.get("SELECT COUNT(*) AS count FROM campaigns", (err, row) => {
+        if (row && row.count === 0) {
+            console.log("No campaigns found. Seeding sample data...");
             db.run(
                 "INSERT INTO campaigns (title, description, category, image_url) VALUES (?, ?, ?, ?)",
                 ["Live Ocean Cleanup", "Help us save the reefs!", "Environment", "https://via.placeholder.com/300"]
@@ -68,4 +75,5 @@ db.serialize(() => {
     });
 });
 
+// 6. EXPORT (If you forget this, server.js will crash!)
 module.exports = db;
