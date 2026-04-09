@@ -349,105 +349,97 @@ if (exists("detailParticipants")) {
   showView("causeDetailView");
 }
 
+async function loadBusinesses() {
+  try {
+    const businesses = await apiRequest("/api/businesses");
+    appState.businesses = Array.isArray(businesses) ? businesses : [];
+    renderBusinesses();
+  } catch (error) {
+    console.error("Failed to load businesses:", error);
+    appState.businesses = [];
+    renderBusinesses();
+  }
+}
+
 function renderBusinesses() {
   const businessGrid = $("businessGrid");
   if (!businessGrid) return;
 
   businessGrid.innerHTML = "";
 
-  const allBusinesses = [
-    {
-      name: "EcoGreen Essentials",
-      category: "Eco-Friendly",
-      description: "Sustainable home products made from recycled materials",
-      trending: "2.3K",
-      rating: "4.9",
-      image: "images/business-eco.jpg"
-    },
-    {
-      name: "Local Harvest Co-op",
-      category: "Fair Trade",
-      description: "Supporting local farmers with organic produce",
-      trending: "1.8K",
-      rating: "4.8",
-      image: "images/business-harvest.jpg"
-    },
-    {
-      name: "Mindful Market",
-      category: "Local",
-      description: "Handcrafted goods supporting artisan communities",
-      trending: "1.5K",
-      rating: "4.7",
-      image: "images/business-mindful.jpg"
-    },
-    {
-      name: "BlueSky Goods",
-      category: "Sustainable",
-      description: "Eco-conscious product collections for everyday living",
-      trending: "1.4K",
-      rating: "4.9",
-      image: "images/business-sky.jpg"
-    },
-    {
-      name: "Urban Roots Studio",
-      category: "Local",
-      description: "Creative local products with community-driven impact",
-      trending: "980",
-      rating: "4.6",
-      image: "images/business-urban.jpg"
-    },
-    {
-      name: "Heritage Fair Finds",
-      category: "Fair Trade",
-      description: "Responsible sourcing and ethically made store selections",
-      trending: "1.2K",
-      rating: "4.8",
-      image: "images/business-heritage.jpg"
-    },
-    ...appState.businesses
-  ];
-
   const searchValue = exists("businessSearchInput")
     ? $("businessSearchInput").value.trim().toLowerCase()
     : "";
 
-  const filteredBusinesses = allBusinesses.filter((business) => {
+  const filteredBusinesses = appState.businesses.filter((business) => {
     return (
       !searchValue ||
-      business.name.toLowerCase().includes(searchValue) ||
-      business.category.toLowerCase().includes(searchValue) ||
-      business.description.toLowerCase().includes(searchValue)
+      (business.business_name || "").toLowerCase().includes(searchValue) ||
+      (business.category || business.industry || "").toLowerCase().includes(searchValue) ||
+      (business.description || "").toLowerCase().includes(searchValue)
     );
   });
 
   if (exists("businessCountText")) {
-    $("businessCountText").textContent = `${filteredBusinesses.length} business${filteredBusinesses.length !== 1 ? "es" : ""} found`;
+    $("businessCountText").textContent =
+      `${filteredBusinesses.length} business${filteredBusinesses.length !== 1 ? "es" : ""} found`;
+  }
+
+  if (filteredBusinesses.length === 0) {
+    businessGrid.innerHTML = `
+      <article class="business-directory-card">
+        <div class="business-directory-body">
+          <h3 class="business-directory-title">No businesses found</h3>
+          <p class="business-directory-description">
+            Businesses will appear here once they are added.
+          </p>
+        </div>
+      </article>
+    `;
+    return;
   }
 
   filteredBusinesses.forEach((business) => {
     const card = document.createElement("article");
     card.className = "business-directory-card";
 
+    const displayName = business.business_name || "Unnamed Business";
+    const displayCategory = business.category || business.industry || "General";
+    const displayDescription = business.description || "No description available.";
+    const displayImage = business.image_url || "images/business-eco.jpg";
+    const displayRating = business.rating || "4.8";
+    const displayTrending = business.trending || "New";
+
     card.innerHTML = `
       <div class="business-directory-image-wrap">
-        <div class="business-directory-image" style="background-image: url('${business.image || ""}');"></div>
-        <div class="business-rating-badge">⭐ ${business.rating || "4.8"}</div>
+        <div class="business-directory-image" style="background-image: url('${displayImage}');"></div>
+        <div class="business-rating-badge">⭐ ${displayRating}</div>
         <button class="business-fav-btn" type="button">♡</button>
       </div>
 
       <div class="business-directory-body">
-        <h3 class="business-directory-title">${business.name}</h3>
-        <span class="business-category-pill">${business.category}</span>
-        <p class="business-directory-description">${business.description}</p>
+        <h3 class="business-directory-title">${displayName}</h3>
+        <span class="business-category-pill">${displayCategory}</span>
+        <p class="business-directory-description">${displayDescription}</p>
 
         <div class="business-directory-meta-row">
-          <span>⍟ ${business.trending || "1.0K"}</span>
-          <span class="business-trending">↗ Trending</span>
+          <span>⍟ ${displayTrending}</span>
+          <span class="business-trending">↗ Growing</span>
         </div>
 
-        <button class="business-visit-btn" type="button">↗ Visit Store</button>
+        <button class="business-visit-btn" type="button">
+          ${business.website ? "↗ Visit Website" : "↗ View Business"}
+        </button>
       </div>
     `;
+
+    const visitBtn = card.querySelector(".business-visit-btn");
+    if (visitBtn && business.website) {
+      visitBtn.addEventListener("click", (event) => {
+        event.stopPropagation();
+        window.open(business.website, "_blank", "noopener,noreferrer");
+      });
+    }
 
     businessGrid.appendChild(card);
   });
@@ -696,39 +688,65 @@ function handleJoinCampaign() {
   }
 }
 
-function handleBusinessSubmit(event) {
+async function handleBusinessSubmit(event) {
   event.preventDefault();
 
   if (!appState.currentUser) {
     showView("authView");
+    setAuthMode("login");
     return;
   }
 
-  const name = exists("businessName") ? $("businessName").value.trim() : "";
+  const business_name = exists("businessName") ? $("businessName").value.trim() : "";
   const description = exists("businessDescription") ? $("businessDescription").value.trim() : "";
   const category = exists("businessCategory") ? $("businessCategory").value : "";
 
   if (exists("businessMsg")) $("businessMsg").textContent = "";
 
-  if (!name || !description || !category) {
-    if (exists("businessMsg")) $("businessMsg").textContent = "Please complete all business fields.";
+  if (!business_name || !description || !category) {
+    if (exists("businessMsg")) {
+      $("businessMsg").textContent = "Please complete all business fields.";
+    }
     return;
   }
 
-  const newBusiness = {
-    name,
-    description,
+  const payload = {
+    user_id: appState.currentUser?.id || null,
+    business_name,
     category,
-    trending: "New Listing"
+    description,
+    industry: category,
+    image_url: "images/business-eco.jpg",
+    rating: 4.8,
+    trending: "New"
   };
 
-  appState.businesses.push(newBusiness);
-  saveBusinesses();
-  renderBusinesses();
+  try {
+    await apiRequest("/api/businesses", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
 
-  if (exists("businessMsg")) $("businessMsg").textContent = "Business submitted successfully.";
-  if (exists("businessForm")) $("businessForm").reset();
-  updateBusinessPreview();
+    if (exists("businessMsg")) {
+      $("businessMsg").textContent = "Business submitted successfully.";
+    }
+
+    if (exists("businessForm")) $("businessForm").reset();
+
+    document.querySelectorAll(".promote-category-btn").forEach((btn) => {
+      btn.classList.remove("active");
+    });
+
+    if (exists("businessCategory")) $("businessCategory").value = "";
+
+    updateBusinessPreview();
+    loadBusinesses();
+    showView("businessDirectoryView");
+  } catch (error) {
+    if (exists("businessMsg")) {
+      $("businessMsg").textContent = error.message || "Failed to submit business.";
+    }
+  }
 }
 
 function updateBusinessPreview() {
@@ -1073,7 +1091,7 @@ function init() {
 
   renderNav();
   loadCampaigns();
-  renderBusinesses();
+  loadBusinesses();
   updateBusinessPreview();
   bindEvents();
 

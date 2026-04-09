@@ -25,12 +25,24 @@ db.serialize(() => {
   db.run(`CREATE TABLE IF NOT EXISTS businesses (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER,
-    business_name TEXT,
+    business_name TEXT NOT NULL,
+    category TEXT,
+    description TEXT,
     abn TEXT,
     industry TEXT,
     website TEXT,
+    image_url TEXT,
+    rating REAL DEFAULT 4.8,
+    trending TEXT DEFAULT 'New',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users (id)
   )`);
+
+  db.run(`ALTER TABLE businesses ADD COLUMN category TEXT`, () => {});
+  db.run(`ALTER TABLE businesses ADD COLUMN description TEXT`, () => {});
+  db.run(`ALTER TABLE businesses ADD COLUMN image_url TEXT`, () => {});
+  db.run(`ALTER TABLE businesses ADD COLUMN rating REAL DEFAULT 4.8`, () => {});
+  db.run(`ALTER TABLE businesses ADD COLUMN trending TEXT DEFAULT 'New'`, () => {});
 
   db.run(`CREATE TABLE IF NOT EXISTS campaigns (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -45,11 +57,7 @@ db.serialize(() => {
     FOREIGN KEY (creator_id) REFERENCES users (id)
   )`);
 
-  db.run(`ALTER TABLE campaigns ADD COLUMN image_url TEXT`, (err) => {
-    if (err && !err.message.includes("duplicate column name")) {
-      console.error("Add image_url column error:", err.message);
-    }
-  });
+  db.run(`ALTER TABLE campaigns ADD COLUMN image_url TEXT`, () => {});
 
   db.get("SELECT COUNT(*) AS count FROM campaigns", (err, row) => {
     if (err) {
@@ -58,7 +66,6 @@ db.serialize(() => {
     }
 
     if (row && row.count === 0) {
-      console.log("Empty campaigns table detected. Inserting sample data...");
       db.run(
         `INSERT INTO campaigns (title, description, category, image_url)
          VALUES (?, ?, ?, ?)`,
