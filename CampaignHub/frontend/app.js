@@ -7,80 +7,12 @@ const appState = {
   token: localStorage.getItem("token") || null,
   joinedCampaigns: JSON.parse(localStorage.getItem("joinedCampaigns") || "[]"),
   businesses: JSON.parse(localStorage.getItem("businesses") || "[]"),
+  campaigns: [],
   selectedCause: null,
   activeCauseFilter: "all",
   selectedInterests: []
 };
 
-/** temporary data until campaigns/businesses come from backend */
-const causes = [
-  {
-    id: 1,
-    title: "Community Support Network",
-    category: "community",
-    categoryLabel: "Community Support",
-    description: "Support neighborhood food drives, shelter outreach, and volunteer coordination.",
-    date: "April 12, 2026",
-    location: "Melbourne Community Hall",
-    participants: 24,
-    image: "images/community.jpg"
-  },
-  {
-    id: 2,
-    title: "Clean Ocean Initiative",
-    category: "environment",
-    categoryLabel: "Environmental Action",
-    description: "Join us in cleaning local beaches and raising awareness about ocean pollution.",
-    date: "March 15, 2026",
-    location: "Santa Monica Beach",
-    participants: 47,
-    image: "images/ocean.jpg"
-  },
-  {
-    id: 3,
-    title: "Education Access Drive",
-    category: "education",
-    categoryLabel: "Education Access",
-    description: "Help provide learning materials, tutoring support, and scholarships for students.",
-    date: "May 03, 2026",
-    location: "City Learning Center",
-    participants: 31,
-    image: "images/education.jpg"
-  },
-  {
-    id: 4,
-    title: "Equal Voices Campaign",
-    category: "equality",
-    categoryLabel: "Social Equality",
-    description: "Support inclusion programs, fairness initiatives, and equal opportunities for communities.",
-    date: "June 11, 2026",
-    location: "Melbourne Civic Centre",
-    participants: 18,
-    image: "images/equality.jpg"
-  },
-  {
-    id: 5,
-    title: "Healthy Communities Drive",
-    category: "health",
-    categoryLabel: "Health & Wellness",
-    description: "Promote wellness checks, health education, and community care support programs.",
-    date: "July 08, 2026",
-    location: "Southside Wellness Hub",
-    participants: 29,
-    image: "images/health.jpg"
-  },
-  {
-    id: 6,
-    title: "Hope Relief Program",
-    category: "poverty",
-    categoryLabel: "Poverty Relief",
-    description: "Help provide food packs, emergency essentials, and support services for families in need.",
-    date: "August 02, 2026",
-    location: "North Melbourne Outreach Center",
-    participants: 36,
-    image: "images/poverty.jpg"
-  }
-];
 
 function $(id) {
   return document.getElementById(id);
@@ -325,18 +257,20 @@ function renderCauses() {
     ? $("causeSearchInput").value.trim().toLowerCase()
     : "";
 
-  const filteredCauses = causes.filter((cause) => {
-    const matchesFilter =
-      appState.activeCauseFilter === "all" || cause.category === appState.activeCauseFilter;
+const filteredCauses = appState.campaigns.filter((cause) => {
+  const category = (cause.category || "").toLowerCase();
 
-    const matchesSearch =
-      !searchValue ||
-      cause.title.toLowerCase().includes(searchValue) ||
-      cause.categoryLabel.toLowerCase().includes(searchValue) ||
-      cause.description.toLowerCase().includes(searchValue);
+  const matchesFilter =
+    appState.activeCauseFilter === "all" || category === appState.activeCauseFilter;
 
-    return matchesFilter && matchesSearch;
-  });
+  const matchesSearch =
+    !searchValue ||
+    (cause.title || "").toLowerCase().includes(searchValue) ||
+    (cause.category || "").toLowerCase().includes(searchValue) ||
+    (cause.description || "").toLowerCase().includes(searchValue);
+
+  return matchesFilter && matchesSearch;
+});
 
   if (exists("causeCountText")) {
     $("causeCountText").textContent = `${filteredCauses.length} cause${filteredCauses.length !== 1 ? "s" : ""} found`;
@@ -373,24 +307,24 @@ function renderCauses() {
     const card = document.createElement("article");
     card.className = "cause-directory-card";
 
-    card.innerHTML = `
-      <div class="cause-directory-image-wrap">
-        <div class="cause-directory-image" style="background-image: url('${cause.image}');"></div>
-        <div class="cause-directory-badge badge-${cause.category}">
-          ${categoryIcons[cause.category] || "•"}
-        </div>
-        <button class="cause-fav-btn" type="button">♡</button>
-      </div>
+card.innerHTML = `
+  <div class="cause-directory-image-wrap">
+    <div class="cause-directory-image" style="background-image: url('${cause.image_url || "images/community.jpg"}');"></div>
+    <div class="cause-directory-badge badge-${(cause.category || "community").toLowerCase()}">
+      ${categoryIcons[(cause.category || "community").toLowerCase()] || "•"}
+    </div>
+    <button class="cause-fav-btn" type="button">♡</button>
+  </div>
 
-      <div class="cause-directory-body">
-        <h3 class="cause-directory-title">${cause.categoryLabel}</h3>
+  <div class="cause-directory-body">
+    <h3 class="cause-directory-title">${cause.title || "Untitled Campaign"}</h3>
 
-        <div class="cause-directory-meta">
-          <span class="cause-meta-pill">👜 ${projectCounts[cause.category] || 10} Projects</span>
-          <span class="cause-meta-pill">⍟ ${activeCounts[cause.category] || 500} Active</span>
-        </div>
-      </div>
-    `;
+    <div class="cause-directory-meta">
+      <span class="cause-meta-pill">📂 ${cause.category || "General"}</span>
+      <span class="cause-meta-pill">💰 Goal: ${cause.goal_amount ?? 0}</span>
+    </div>
+  </div>
+`;
 
     card.addEventListener("click", () => openCauseDetail(cause.id));
     causeGrid.appendChild(card);
@@ -398,19 +332,19 @@ function renderCauses() {
 }
 
 function openCauseDetail(causeId) {
-  const cause = causes.find((item) => item.id === causeId);
+  const cause = appState.campaigns.find((item) => item.id === causeId);
   if (!cause) return;
 
   appState.selectedCause = cause;
 
-  if (exists("detailCategory")) $("detailCategory").textContent = cause.categoryLabel;
-  if (exists("detailTitle")) $("detailTitle").textContent = cause.title;
-  if (exists("detailDescription")) $("detailDescription").textContent = cause.description;
-  if (exists("detailDate")) $("detailDate").textContent = cause.date;
-  if (exists("detailLocation")) $("detailLocation").textContent = cause.location;
-  if (exists("detailParticipants")) {
-    $("detailParticipants").textContent = `${cause.participants} Participants`;
-  }
+if (exists("detailCategory")) $("detailCategory").textContent = cause.category || "General";
+if (exists("detailTitle")) $("detailTitle").textContent = cause.title || "Untitled Campaign";
+if (exists("detailDescription")) $("detailDescription").textContent = cause.description || "No description available.";
+if (exists("detailDate")) $("detailDate").textContent = "Ongoing Campaign";
+if (exists("detailLocation")) $("detailLocation").textContent = "Online / Community";
+if (exists("detailParticipants")) {
+  $("detailParticipants").textContent = `Raised: ${cause.current_amount ?? 0}`;
+}
 
   showView("causeDetailView");
 }
@@ -579,10 +513,17 @@ function setAuthMode(mode) {
       : "Register to start making an impact.";
   }
 }
+
 async function loadCampaigns() {
-    const response = await fetch(`${API_URL}/campaigns`);
-    const data = await response.json();
-    console.log("Data from backend:", data); // Check console for this!
+  try {
+    const campaigns = await apiRequest("/api/campaigns");
+    appState.campaigns = Array.isArray(campaigns) ? campaigns : [];
+    renderCauses();
+  } catch (error) {
+    console.error("Failed to load campaigns:", error);
+    appState.campaigns = [];
+    renderCauses();
+  }
 }
 
 async function apiRequest(path, options = {}) {
@@ -1131,7 +1072,7 @@ function init() {
   }
 
   renderNav();
-  renderCauses();
+  loadCampaigns();
   renderBusinesses();
   updateBusinessPreview();
   bindEvents();
