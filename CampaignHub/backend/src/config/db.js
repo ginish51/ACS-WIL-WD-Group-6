@@ -44,6 +44,20 @@ db.serialize(() => {
         status TEXT DEFAULT 'active', -- 'active', 'completed', 'paused'
         FOREIGN KEY (creator_id) REFERENCES users (id)
     )`);
+    db.get("SELECT count(*) as count FROM campaigns", (err, row) => {
+        if (row.count === 0) {
+            console.log("Database empty. Seeding test data...");
+            db.run(`INSERT INTO campaigns (title, description, category, image_url) 
+                    VALUES ('Clean Ocean Initiative', 'Cleaning local beaches.', 'Environment', 'https://images.unsplash.com/photo-1484503781912-7c4a065757d4')`);
+        }
+    });
+    db.get("SELECT count(*) as count FROM campaigns", (err, row) => {
+    if (row && row.count === 0) {
+        console.log("Database is empty! Inserting seed data...");
+        db.run(`INSERT INTO campaigns (title, description, category) 
+                VALUES ('First Test Campaign', 'If you see this, the backend is working!', 'Community')`);
+    }
+});
 });
 
 module.exports = db;
