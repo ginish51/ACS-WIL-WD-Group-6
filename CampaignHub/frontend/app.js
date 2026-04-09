@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:5000"; /** will change when API is hosted */
+const API_BASE = window.location.origin;
 
 const appState = {
   currentView: "landingView",
@@ -12,7 +12,7 @@ const appState = {
   selectedInterests: []
 };
 
-/** hard-coded for prototype purposes */
+/** temporary data until campaigns/businesses come from backend */
 const causes = [
   {
     id: 1,
@@ -82,27 +82,6 @@ const causes = [
   }
 ];
 
-const starterBusinesses = [
-  {
-    name: "EcoGreen Essentials",
-    category: "Eco-Friendly",
-    description: "Sustainable home products made from recycled materials.",
-    trending: "2.3K Trending"
-  },
-  {
-    name: "Local Harvest Co-op",
-    category: "Fair Trade",
-    description: "Supporting local farmers with organic produce and ethical sourcing.",
-    trending: "1.8K Trending"
-  },
-  {
-    name: "Mindful Market",
-    category: "Local",
-    description: "Handcrafted goods supporting artisan communities and small makers.",
-    trending: "1.5K Trending"
-  }
-];
-
 function $(id) {
   return document.getElementById(id);
 }
@@ -145,10 +124,6 @@ function saveBusinesses() {
   localStorage.setItem("businesses", JSON.stringify(appState.businesses));
 }
 
-function saveSelectedInterests() {
-  localStorage.setItem("selectedInterests", JSON.stringify(appState.selectedInterests));
-}
-
 function isValidEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   return emailRegex.test(email);
@@ -188,10 +163,7 @@ function loadSelectedInterests(user = appState.currentUser) {
 }
 
 function saveSelectedInterests() {
-  localStorage.setItem(
-    getInterestStorageKey(),
-    JSON.stringify(appState.selectedInterests)
-  );
+  localStorage.setItem(getInterestStorageKey(), JSON.stringify(appState.selectedInterests));
 }
 
 /** core SPA */
@@ -659,9 +631,8 @@ async function handleLogin(event) {
       body: JSON.stringify({ email, password })
     });
 
-   saveSession(data.token, data.user);
-appState.selectedInterests = loadSelectedInterests(data.user);
-renderNav();
+    saveSession(data.token, data.user);
+    appState.selectedInterests = loadSelectedInterests(data.user);
     renderNav();
 
     if (hasSelectedInterests()) {
@@ -1053,10 +1024,9 @@ function setupMenuToggle() {
 }
 
 function bindEvents() {
-
   if (exists("causeSearchInput")) {
-  $("causeSearchInput").addEventListener("input", renderCauses);
-}
+    $("causeSearchInput").addEventListener("input", renderCauses);
+  }
 
   if (exists("discoverBtn")) $("discoverBtn").addEventListener("click", scrollToCauses);
 
@@ -1082,11 +1052,12 @@ function bindEvents() {
 
   if (exists("businessForm")) $("businessForm").addEventListener("submit", handleBusinessSubmit);
   if (exists("businessName")) $("businessName").addEventListener("input", updateBusinessPreview);
-if (exists("businessDescription")) $("businessDescription").addEventListener("input", updateBusinessPreview);
+  if (exists("businessDescription")) $("businessDescription").addEventListener("input", updateBusinessPreview);
   if (exists("businessCategory")) $("businessCategory").addEventListener("change", updateBusinessPreview);
+
   if (exists("businessSearchInput")) {
-  $("businessSearchInput").addEventListener("input", renderBusinesses);
-}
+    $("businessSearchInput").addEventListener("input", renderBusinesses);
+  }
 
   if (exists("interestContinueBtn")) {
     $("interestContinueBtn").addEventListener("click", handleInterestContinue);
@@ -1115,28 +1086,28 @@ if (exists("businessDescription")) $("businessDescription").addEventListener("in
   });
 
   if (exists("browseCampaignsCue")) {
-  const handleBrowseCue = () => {
-    const causesSection = $("causesSection");
-    if (!causesSection) return;
+    const handleBrowseCue = () => {
+      const causesSection = $("causesSection");
+      if (!causesSection) return;
 
-    const headerOffset = 96;
-    const targetY =
-      causesSection.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+      const headerOffset = 96;
+      const targetY =
+        causesSection.getBoundingClientRect().top + window.pageYOffset - headerOffset;
 
-    window.scrollTo({
-      top: targetY,
-      behavior: "smooth"
+      window.scrollTo({
+        top: targetY,
+        behavior: "smooth"
+      });
+    };
+
+    $("browseCampaignsCue").addEventListener("click", handleBrowseCue);
+    $("browseCampaignsCue").addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        handleBrowseCue();
+      }
     });
-  };
-
-  $("browseCampaignsCue").addEventListener("click", handleBrowseCue);
-  $("browseCampaignsCue").addEventListener("keydown", (event) => {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      handleBrowseCue();
-    }
-  });
-}
+  }
 
   setupFilters();
   setupViewButtons();
