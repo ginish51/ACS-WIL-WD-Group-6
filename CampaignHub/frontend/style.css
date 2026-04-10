@@ -1945,6 +1945,26 @@ a {
   cursor: pointer;
 }
 
+.campaign-textarea {
+  width: 100%;
+  min-height: 140px;
+  padding: 16px 18px;
+  border: 1px solid #d8dee8;
+  border-radius: 16px;
+  font: inherit;
+  resize: vertical;
+  background: #f7f8fb;
+  color: #1f2a37;
+  box-sizing: border-box;
+}
+
+.campaign-textarea:focus {
+  outline: none;
+  border-color: #22b07d;
+  box-shadow: 0 0 0 3px rgba(34, 176, 125, 0.12);
+  background: #fff;
+}
+
 .site-footer {
   text-align: center;
   padding: 16px;
