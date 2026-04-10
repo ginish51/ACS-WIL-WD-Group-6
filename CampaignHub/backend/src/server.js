@@ -39,6 +39,7 @@ const campaignUploadsDir = path.join(uploadsRoot, "campaigns");
 
 app.use("/uploads", express.static(uploadsRoot));
 
+// multer storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     if (req.path.includes("/api/businesses")) {
@@ -80,7 +81,11 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-// businesses
+// =========================
+// BUSINESSES
+// =========================
+
+// create business
 app.post("/api/businesses", upload.single("image"), authenticateToken, (req, res) => {
   const {
     business_name,
@@ -122,7 +127,10 @@ app.post("/api/businesses", upload.single("image"), authenticateToken, (req, res
       trending || "New"
     ],
     function (err) {
-      if (err) return res.status(400).json({ message: err.message });
+      if (err) {
+        console.error("BUSINESS INSERT ERROR:", err.message);
+        return res.status(400).json({ message: err.message });
+      }
 
       res.status(201).json({
         message: "Business created successfully.",
@@ -133,14 +141,22 @@ app.post("/api/businesses", upload.single("image"), authenticateToken, (req, res
   );
 });
 
+// get businesses
 app.get("/api/businesses", (req, res) => {
   db.all("SELECT * FROM businesses ORDER BY id DESC", [], (err, rows) => {
-    if (err) return res.status(500).json({ message: err.message });
+    if (err) {
+      console.error("GET BUSINESSES ERROR:", err.message);
+      return res.status(500).json({ message: err.message });
+    }
     res.json(rows);
   });
 });
 
-// campaigns: submit -> pending
+// =========================
+// CAMPAIGNS
+// =========================
+
+// create campaign -> pending
 app.post("/api/campaigns", upload.single("image"), authenticateToken, (req, res) => {
   const {
     title,
@@ -176,7 +192,10 @@ app.post("/api/campaigns", upload.single("image"), authenticateToken, (req, res)
       "pending"
     ],
     function (err) {
-      if (err) return res.status(400).json({ message: err.message });
+      if (err) {
+        console.error("CAMPAIGN INSERT ERROR:", err.message);
+        return res.status(400).json({ message: err.message });
+      }
 
       res.status(201).json({
         message: "Campaign submitted for approval.",
@@ -187,13 +206,16 @@ app.post("/api/campaigns", upload.single("image"), authenticateToken, (req, res)
   );
 });
 
-// public landing page campaigns: only active
+// public campaigns -> only active
 app.get("/api/campaigns", (req, res) => {
   db.all(
     "SELECT * FROM campaigns WHERE status = 'active' ORDER BY id DESC",
     [],
     (err, rows) => {
-      if (err) return res.status(500).json({ message: err.message });
+      if (err) {
+        console.error("GET ACTIVE CAMPAIGNS ERROR:", err.message);
+        return res.status(500).json({ message: err.message });
+      }
       res.json(rows);
     }
   );
@@ -205,12 +227,16 @@ app.get("/api/my-campaigns", authenticateToken, (req, res) => {
     "SELECT * FROM campaigns WHERE creator_id = ? ORDER BY id DESC",
     [req.user.id],
     (err, rows) => {
-      if (err) return res.status(500).json({ message: err.message });
+      if (err) {
+        console.error("GET MY CAMPAIGNS ERROR:", err.message);
+        return res.status(500).json({ message: err.message });
+      }
       res.json(rows);
     }
   );
 });
 
+// logged-in user's campaign stats
 app.get("/api/my-campaign-stats", authenticateToken, (req, res) => {
   const sql = `
     SELECT
@@ -222,7 +248,11 @@ app.get("/api/my-campaign-stats", authenticateToken, (req, res) => {
   `;
 
   db.get(sql, [req.user.id], (err, row) => {
-    if (err) return res.status(500).json({ message: err.message });
+    if (err) {
+      console.error("GET MY CAMPAIGN STATS ERROR:", err.message);
+      return res.status(500).json({ message: err.message });
+    }
+
     res.json({
       active_count: row?.active_count || 0,
       pending_count: row?.pending_count || 0,
@@ -231,59 +261,91 @@ app.get("/api/my-campaign-stats", authenticateToken, (req, res) => {
   });
 });
 
-// admin dashboard
+// =========================
+// ADMIN CAMPAIGN REVIEW
+// =========================
+
+// list pending campaigns
 app.get("/api/admin/campaigns/pending", authenticateToken, requireAdmin, (req, res) => {
   db.all(
     "SELECT * FROM campaigns WHERE status = 'pending' ORDER BY id DESC",
     [],
     (err, rows) => {
-      if (err) return res.status(500).json({ message: err.message });
+      if (err) {
+        console.error("GET PENDING CAMPAIGNS ERROR:", err.message);
+        return res.status(500).json({ message: err.message });
+      }
       res.json(rows);
     }
   );
 });
 
+// approve campaign
 app.patch("/api/admin/campaigns/:id/approve", authenticateToken, requireAdmin, (req, res) => {
   const { id } = req.params;
 
   db.run(
     `UPDATE campaigns
-     SET status = 'active', reviewed_at = datetime('now'), rejection_reason = NULL
+     SET status = 'active',
+         reviewed_at = datetime('now'),
+         rejection_reason = NULL
      WHERE id = ?`,
     [id],
     function (err) {
-      if (err) return res.status(400).json({ message: err.message });
+      if (err) {
+        console.error("APPROVE CAMPAIGN ERROR:", err.message);
+        return res.status(400).json({ message: err.message });
+      }
+
       res.json({ message: "Campaign approved." });
     }
   );
 });
 
+// reject campaign
 app.patch("/api/admin/campaigns/:id/reject", authenticateToken, requireAdmin, (req, res) => {
   const { id } = req.params;
   const { rejection_reason } = req.body;
 
   db.run(
     `UPDATE campaigns
-     SET status = 'rejected', reviewed_at = datetime('now'), rejection_reason = ?
+     SET status = 'rejected',
+         reviewed_at = datetime('now'),
+         rejection_reason = ?
      WHERE id = ?`,
     [rejection_reason || null, id],
     function (err) {
-      if (err) return res.status(400).json({ message: err.message });
+      if (err) {
+        console.error("REJECT CAMPAIGN ERROR:", err.message);
+        return res.status(400).json({ message: err.message });
+      }
+
       res.json({ message: "Campaign rejected." });
     }
   );
 });
 
+// =========================
+// USERS
+// =========================
+
 app.get("/api/users", (req, res) => {
   db.all("SELECT id, name, email, role FROM users", [], (err, rows) => {
-    if (err) return res.status(500).json({ message: err.message });
+    if (err) {
+      console.error("GET USERS ERROR:", err.message);
+      return res.status(500).json({ message: err.message });
+    }
     res.json(rows);
   });
 });
 
-// upload / generic error
+// =========================
+// ERROR HANDLER
+// =========================
+
 app.use((err, req, res, next) => {
   if (err) {
+    console.error("SERVER ERROR:", err.message);
     return res.status(400).json({ message: err.message || "Upload failed." });
   }
   next();

@@ -23,6 +23,10 @@ db.serialize(() => {
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
 
+  db.run(`ALTER TABLE users ADD COLUMN state TEXT`, () => {});
+  db.run(`ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user'`, () => {});
+  db.run(`ALTER TABLE users ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP`, () => {});
+
   db.run(`CREATE TABLE IF NOT EXISTS businesses (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER,
@@ -44,6 +48,7 @@ db.serialize(() => {
   db.run(`ALTER TABLE businesses ADD COLUMN image_url TEXT`, () => {});
   db.run(`ALTER TABLE businesses ADD COLUMN rating REAL DEFAULT 4.8`, () => {});
   db.run(`ALTER TABLE businesses ADD COLUMN trending TEXT DEFAULT 'New'`, () => {});
+  db.run(`ALTER TABLE businesses ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP`, () => {});
 
   db.run(`CREATE TABLE IF NOT EXISTS campaigns (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -62,11 +67,15 @@ db.serialize(() => {
   )`);
 
   db.run(`ALTER TABLE campaigns ADD COLUMN image_url TEXT`, () => {});
+  db.run(`ALTER TABLE campaigns ADD COLUMN goal_amount REAL`, () => {});
+  db.run(`ALTER TABLE campaigns ADD COLUMN current_amount REAL DEFAULT 0`, () => {});
+  db.run(`ALTER TABLE campaigns ADD COLUMN creator_id INTEGER`, () => {});
+  db.run(`ALTER TABLE campaigns ADD COLUMN status TEXT DEFAULT 'pending'`, () => {});
   db.run(`ALTER TABLE campaigns ADD COLUMN reviewed_at DATETIME`, () => {});
   db.run(`ALTER TABLE campaigns ADD COLUMN rejection_reason TEXT`, () => {});
   db.run(`ALTER TABLE campaigns ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP`, () => {});
 
-  // seed one admin account
+  // seed admin account
   const adminEmail = "admin@impacthub.com";
   const adminPassword = "Admin123!";
   const adminName = "Impact Hub Admin";
@@ -94,7 +103,7 @@ db.serialize(() => {
     }
   });
 
-  // optional sample active campaign
+  // seed one active campaign only if table is empty
   db.get("SELECT COUNT(*) AS count FROM campaigns", (err, row) => {
     if (err) {
       console.error("Count campaigns error:", err.message);
