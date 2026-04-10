@@ -78,9 +78,7 @@ function getInterestLabel(interestKey) {
 
 function closeMobileMenu() {
   const nav = $("navLinks");
-  if (nav) {
-    nav.classList.remove("open");
-  }
+  if (nav) nav.classList.remove("open");
 }
 
 function getInterestStorageKey(user = appState.currentUser) {
@@ -100,7 +98,7 @@ function saveSelectedInterests() {
   localStorage.setItem(getInterestStorageKey(), JSON.stringify(appState.selectedInterests));
 }
 
-/** core SPA */
+
 function showView(viewId) {
   const target = $(viewId);
   if (!target) return;
@@ -128,6 +126,10 @@ function showView(viewId) {
     renderInterestSummary();
   }
 
+  if (viewId === "adminDashboardView") {
+    loadAdminPendingCampaigns();
+  }
+
   closeMobileMenu();
 }
 
@@ -148,6 +150,7 @@ function scrollToCauses() {
     });
   });
 }
+
 
 function renderNav() {
   const nav = $("navLinks");
@@ -185,18 +188,6 @@ function renderNav() {
     );
   }
 
-  if (exists("campaignSubmitView")) {
-  const campaignBtn = document.createElement("button");
-  campaignBtn.className = "nav-dropdown-item";
-  campaignBtn.type = "button";
-  campaignBtn.textContent = "Submit Campaign";
-  campaignBtn.addEventListener("click", () => {
-    showView("campaignSubmitView");
-    closeMobileMenu();
-  });
-  menu.appendChild(campaignBtn);
-}
-
   if (appState.currentUser) {
     const dropdown = document.createElement("div");
     dropdown.className = "nav-dropdown";
@@ -221,18 +212,17 @@ function renderNav() {
       menu.appendChild(dashboardBtn);
     }
 
-    if (appState.currentUser?.role === "admin" && exists("adminDashboardView")) {
-  const adminBtn = document.createElement("button");
-  adminBtn.className = "nav-dropdown-item";
-  adminBtn.type = "button";
-  adminBtn.textContent = "Admin Dashboard";
-  adminBtn.addEventListener("click", () => {
-    loadAdminPendingCampaigns();
-    showView("adminDashboardView");
-    closeMobileMenu();
-  });
-  menu.appendChild(adminBtn);
-}
+    if (exists("campaignSubmitView")) {
+      const campaignBtn = document.createElement("button");
+      campaignBtn.className = "nav-dropdown-item";
+      campaignBtn.type = "button";
+      campaignBtn.textContent = "Submit Campaign";
+      campaignBtn.addEventListener("click", () => {
+        showView("campaignSubmitView");
+        closeMobileMenu();
+      });
+      menu.appendChild(campaignBtn);
+    }
 
     if (exists("promoteBusinessView")) {
       const promoteBtn = document.createElement("button");
@@ -244,6 +234,19 @@ function renderNav() {
         closeMobileMenu();
       });
       menu.appendChild(promoteBtn);
+    }
+
+    if (appState.currentUser?.role === "admin" && exists("adminDashboardView")) {
+      const adminBtn = document.createElement("button");
+      adminBtn.className = "nav-dropdown-item";
+      adminBtn.type = "button";
+      adminBtn.textContent = "Admin Dashboard";
+      adminBtn.addEventListener("click", () => {
+        loadAdminPendingCampaigns();
+        showView("adminDashboardView");
+        closeMobileMenu();
+      });
+      menu.appendChild(adminBtn);
     }
 
     if (exists("logoutView")) {
@@ -274,6 +277,19 @@ function renderNav() {
   }
 }
 
+
+async function loadCampaigns() {
+  try {
+    const campaigns = await apiRequest("/api/campaigns");
+    appState.campaigns = Array.isArray(campaigns) ? campaigns : [];
+    renderCauses();
+  } catch (error) {
+    console.error("Failed to load campaigns:", error);
+    appState.campaigns = [];
+    renderCauses();
+  }
+}
+
 function renderCauses() {
   const causeGrid = $("causeGrid");
   if (!causeGrid) return;
@@ -300,7 +316,8 @@ function renderCauses() {
   });
 
   if (exists("causeCountText")) {
-    $("causeCountText").textContent = `${filteredCauses.length} cause${filteredCauses.length !== 1 ? "s" : ""} found`;
+    $("causeCountText").textContent =
+      `${filteredCauses.length} cause${filteredCauses.length !== 1 ? "s" : ""} found`;
   }
 
   const categoryIcons = {
@@ -311,6 +328,20 @@ function renderCauses() {
     health: "⌘",
     poverty: "◫"
   };
+
+  if (filteredCauses.length === 0) {
+    causeGrid.innerHTML = `
+      <article class="cause-directory-card">
+        <div class="cause-directory-body">
+          <h3 class="cause-directory-title">No active campaigns found</h3>
+          <p class="business-directory-description">
+            Approved campaigns will appear here once they become active.
+          </p>
+        </div>
+      </article>
+    `;
+    return;
+  }
 
   filteredCauses.forEach((cause) => {
     const card = document.createElement("article");
@@ -356,6 +387,67 @@ function openCauseDetail(causeId) {
   }
 
   showView("causeDetailView");
+}
+
+async function handleCampaignSubmit(event) {
+  event.preventDefault();
+
+  if (!appState.currentUser) {
+    showView("authView");
+    setAuthMode("login");
+    return;
+  }
+
+  const title = exists("campaignTitle") ? $("campaignTitle").value.trim() : "";
+  const description = exists("campaignDescription") ? $("campaignDescription").value.trim() : "";
+  const category = exists("campaignCategory") ? $("campaignCategory").value.trim() : "";
+  const goalAmount = exists("campaignGoalAmount") ? $("campaignGoalAmount").value.trim() : "";
+  const imageFile = exists("campaignImage") ? $("campaignImage").files[0] : null;
+
+  if (exists("campaignMsg")) $("campaignMsg").textContent = "";
+
+  if (!title || !description || !category || !goalAmount || !imageFile) {
+    if (exists("campaignMsg")) {
+      $("campaignMsg").textContent = "Please complete all campaign fields and upload an image.";
+    }
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("category", category);
+    formData.append("goal_amount", goalAmount);
+    formData.append("image", imageFile);
+
+    const response = await fetch(`${API_BASE}/api/campaigns`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${appState.token}`
+      },
+      body: formData
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to submit campaign.");
+    }
+
+    if (exists("campaignMsg")) {
+      $("campaignMsg").textContent = "Campaign submitted for admin approval.";
+    }
+
+    if (exists("campaignForm")) $("campaignForm").reset();
+
+    await loadMyCampaignStats();
+    await loadMyCampaigns();
+  } catch (error) {
+    if (exists("campaignMsg")) {
+      $("campaignMsg").textContent = error.message || "Failed to submit campaign.";
+    }
+  }
 }
 
 async function loadMyCampaignStats() {
@@ -419,66 +511,6 @@ function renderMyCampaigns() {
   });
 }
 
-async function handleCampaignSubmit(event) {
-  event.preventDefault();
-
-  if (!appState.currentUser) {
-    showView("authView");
-    setAuthMode("login");
-    return;
-  }
-
-  const title = exists("campaignTitle") ? $("campaignTitle").value.trim() : "";
-  const description = exists("campaignDescription") ? $("campaignDescription").value.trim() : "";
-  const category = exists("campaignCategory") ? $("campaignCategory").value.trim() : "";
-  const goalAmount = exists("campaignGoalAmount") ? $("campaignGoalAmount").value.trim() : "";
-  const imageFile = exists("campaignImage") ? $("campaignImage").files[0] : null;
-
-  if (exists("campaignMsg")) $("campaignMsg").textContent = "";
-
-  if (!title || !description || !category || !goalAmount || !imageFile) {
-    if (exists("campaignMsg")) {
-      $("campaignMsg").textContent = "Please complete all campaign fields and upload an image.";
-    }
-    return;
-  }
-
-  try {
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("description", description);
-    formData.append("category", category);
-    formData.append("goal_amount", goalAmount);
-    formData.append("image", imageFile);
-
-    const response = await fetch(`${API_BASE}/api/campaigns`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${appState.token}`
-      },
-      body: formData
-    });
-
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to submit campaign.");
-    }
-
-    if (exists("campaignMsg")) {
-      $("campaignMsg").textContent = "Campaign submitted for admin approval.";
-    }
-
-    if (exists("campaignForm")) $("campaignForm").reset();
-
-    await loadMyCampaignStats();
-    await loadMyCampaigns();
-  } catch (error) {
-    if (exists("campaignMsg")) {
-      $("campaignMsg").textContent = error.message || "Failed to submit campaign.";
-    }
-  }
-}
 
 async function loadAdminPendingCampaigns() {
   if (!appState.currentUser || appState.currentUser.role !== "admin") return;
@@ -555,6 +587,19 @@ async function rejectCampaign(campaignId, rejectionReason) {
     await loadAdminPendingCampaigns();
   } catch (error) {
     alert(error.message || "Failed to reject campaign.");
+  }
+}
+
+
+async function loadBusinesses() {
+  try {
+    const businesses = await apiRequest("/api/businesses");
+    appState.businesses = Array.isArray(businesses) ? businesses : [];
+    renderBusinesses();
+  } catch (error) {
+    console.error("Failed to load businesses:", error);
+    appState.businesses = [];
+    renderBusinesses();
   }
 }
 
@@ -642,6 +687,162 @@ function renderBusinesses() {
   });
 }
 
+async function handleBusinessSubmit(event) {
+  event.preventDefault();
+
+  if (!appState.currentUser) {
+    showView("authView");
+    setAuthMode("login");
+    return;
+  }
+
+  const businessName = exists("businessName") ? $("businessName").value.trim() : "";
+  const description = exists("businessDescription") ? $("businessDescription").value.trim() : "";
+  const category = exists("businessCategory") ? $("businessCategory").value.trim() : "";
+  const logoFile = exists("businessLogo") ? $("businessLogo").files[0] : null;
+
+  if (exists("businessMsg")) $("businessMsg").textContent = "";
+
+  if (!businessName || !description || !category || !logoFile) {
+    if (exists("businessMsg")) {
+      $("businessMsg").textContent = "Please complete all business fields and upload a logo.";
+    }
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append("business_name", businessName);
+    formData.append("category", category);
+    formData.append("description", description);
+    formData.append("industry", category);
+    formData.append("rating", "4.8");
+    formData.append("trending", "New");
+    formData.append("image", logoFile);
+
+    const response = await fetch(`${API_BASE}/api/businesses`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${appState.token}`
+      },
+      body: formData
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to submit business.");
+    }
+
+    if (exists("businessMsg")) {
+      $("businessMsg").textContent = "Business submitted successfully.";
+    }
+
+    if (exists("businessForm")) $("businessForm").reset();
+
+    document.querySelectorAll(".promote-category-btn").forEach((btn) => {
+      btn.classList.remove("active");
+    });
+
+    if (exists("businessCategory")) $("businessCategory").value = "";
+
+    if (exists("previewLogoArea")) {
+      $("previewLogoArea").innerHTML = '<span class="preview-camera">📷</span>';
+    }
+
+    updateBusinessPreview();
+    await loadBusinesses();
+    showView("businessDirectoryView");
+  } catch (error) {
+    if (exists("businessMsg")) {
+      $("businessMsg").textContent = error.message || "Failed to submit business.";
+    }
+  }
+}
+
+function updateBusinessPreview() {
+  const name = exists("businessName")
+    ? $("businessName").value.trim() || "Your Business Name"
+    : "Your Business Name";
+
+  const description = exists("businessDescription")
+    ? $("businessDescription").value.trim() || "Your business description will appear here..."
+    : "Your business description will appear here...";
+
+  const category = exists("businessCategory")
+    ? $("businessCategory").value || "Select category"
+    : "Select category";
+
+  if (exists("previewBusinessName")) $("previewBusinessName").textContent = name;
+  if (exists("previewBusinessDescription")) $("previewBusinessDescription").textContent = description;
+  if (exists("previewBusinessCategory")) $("previewBusinessCategory").textContent = category;
+
+  if (exists("businessCharCount") && exists("businessDescription")) {
+    $("businessCharCount").textContent = $("businessDescription").value.length;
+  }
+
+  updateBusinessSubmitState();
+}
+
+function updateBusinessSubmitState() {
+  if (!exists("businessSubmitBtn")) return;
+
+  const name = exists("businessName") ? $("businessName").value.trim() : "";
+  const description = exists("businessDescription") ? $("businessDescription").value.trim() : "";
+  const category = exists("businessCategory") ? $("businessCategory").value.trim() : "";
+  const hasLogo = exists("businessLogo") ? $("businessLogo").files.length > 0 : false;
+
+  const ready = !!(name && description && category && hasLogo);
+
+  $("businessSubmitBtn").disabled = !ready;
+  $("businessSubmitBtn").classList.toggle("enabled", ready);
+  $("businessSubmitBtn").textContent = ready
+    ? "Submit for Review"
+    : "Complete all fields to submit";
+}
+
+function setupBusinessCategoryButtons() {
+  document.querySelectorAll(".promote-category-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      document.querySelectorAll(".promote-category-btn").forEach((btn) => {
+        btn.classList.remove("active");
+      });
+
+      button.classList.add("active");
+
+      if (exists("businessCategory")) {
+        $("businessCategory").value = button.dataset.category;
+      }
+
+      updateBusinessPreview();
+    });
+  });
+}
+
+function setupBusinessLogoPreview() {
+  if (!exists("businessLogo") || !exists("previewLogoArea")) return;
+
+  $("businessLogo").addEventListener("change", (event) => {
+    const file = event.target.files[0];
+
+    if (!file) {
+      $("previewLogoArea").innerHTML = '<span class="preview-camera">📷</span>';
+      updateBusinessSubmitState();
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      $("previewLogoArea").innerHTML = `<img src="${reader.result}" alt="Business logo preview" class="preview-logo-image">`;
+    };
+    reader.readAsDataURL(file);
+
+    updateBusinessSubmitState();
+  });
+}
+
+
+
 function updateDashboard() {
   if (!exists("dashboardView")) return;
 
@@ -658,10 +859,8 @@ function updateDashboard() {
   }
 
   if (exists("statCampaigns")) $("statCampaigns").textContent = appState.joinedCampaigns.length || 12;
-  if (exists("statPoints")) {
-    $("statPoints").textContent = 100 + appState.joinedCampaigns.length * 25;
-  }
-  if (exists("statBusinesses")) $("statBusinesses").textContent = appState.businesses.length || 5;
+  if (exists("statPoints")) $("statPoints").textContent = 100 + appState.joinedCampaigns.length * 25;
+  if (exists("statBusinesses")) $("statBusinesses").textContent = appState.businesses.length || 0;
   if (exists("statHours")) $("statHours").textContent = 87;
 
   const dashboardInterestTags = $("dashboardInterestTags");
@@ -684,7 +883,7 @@ function updateDashboard() {
   }
 
   loadMyCampaignStats();
-loadMyCampaigns();
+  loadMyCampaigns();
 }
 
 function setAuthMode(mode) {
@@ -703,30 +902,6 @@ function setAuthMode(mode) {
     $("authSubtitle").textContent = isLogin
       ? "Log in to continue your impact journey."
       : "Register to start making an impact.";
-  }
-}
-
-async function loadCampaigns() {
-  try {
-    const campaigns = await apiRequest("/api/campaigns");
-    appState.campaigns = Array.isArray(campaigns) ? campaigns : [];
-    renderCauses();
-  } catch (error) {
-    console.error("Failed to load campaigns:", error);
-    appState.campaigns = [];
-    renderCauses();
-  }
-}
-
-async function loadBusinesses() {
-  try {
-    const businesses = await apiRequest("/api/businesses");
-    appState.businesses = Array.isArray(businesses) ? businesses : [];
-    renderBusinesses();
-  } catch (error) {
-    console.error("Failed to load businesses:", error);
-    appState.businesses = [];
-    renderBusinesses();
   }
 }
 
@@ -869,6 +1044,20 @@ async function handleRegister(event) {
   }
 }
 
+function handleLogout() {
+  clearSession();
+  appState.selectedInterests = [];
+  appState.myCampaigns = [];
+  appState.adminPendingCampaigns = [];
+  appState.campaignStats = {
+    active_count: 0,
+    pending_count: 0,
+    rejected_count: 0
+  };
+  renderNav();
+  showView("landingView");
+}
+
 function handleJoinCampaign() {
   if (!appState.currentUser) {
     showView("authView");
@@ -900,164 +1089,7 @@ function handleJoinCampaign() {
   }
 }
 
-async function handleBusinessSubmit(event) {
-  event.preventDefault();
 
-  if (!appState.currentUser) {
-    showView("authView");
-    setAuthMode("login");
-    return;
-  }
-
-  const businessName = exists("businessName") ? $("businessName").value.trim() : "";
-  const description = exists("businessDescription") ? $("businessDescription").value.trim() : "";
-  const category = exists("businessCategory") ? $("businessCategory").value.trim() : "";
-  const logoFile = exists("businessLogo") ? $("businessLogo").files[0] : null;
-
-  if (exists("businessMsg")) $("businessMsg").textContent = "";
-
-  if (!businessName || !description || !category || !logoFile) {
-    if (exists("businessMsg")) {
-      $("businessMsg").textContent = "Please complete all business fields and upload a logo.";
-    }
-    return;
-  }
-
-  try {
-    const formData = new FormData();
-    formData.append("user_id", appState.currentUser.id || "");
-    formData.append("business_name", businessName);
-    formData.append("category", category);
-    formData.append("description", description);
-    formData.append("industry", category);
-    formData.append("rating", "4.8");
-    formData.append("trending", "New");
-    formData.append("image", logoFile);
-
-    const response = await fetch(`${API_BASE}/api/businesses`, {
-      method: "POST",
-      body: formData
-    });
-
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to submit business.");
-    }
-
-    if (exists("businessMsg")) {
-      $("businessMsg").textContent = "Business submitted successfully.";
-    }
-
-    if (exists("businessForm")) $("businessForm").reset();
-
-    document.querySelectorAll(".promote-category-btn").forEach((btn) => {
-      btn.classList.remove("active");
-    });
-
-    if (exists("businessCategory")) $("businessCategory").value = "";
-
-    if (exists("previewLogoArea")) {
-      $("previewLogoArea").innerHTML = '<span class="preview-camera">📷</span>';
-    }
-
-    updateBusinessPreview();
-    await loadBusinesses();
-    showView("businessDirectoryView");
-  } catch (error) {
-    if (exists("businessMsg")) {
-      $("businessMsg").textContent = error.message || "Failed to submit business.";
-    }
-  }
-}
-
-function updateBusinessPreview() {
-  const name = exists("businessName")
-    ? $("businessName").value.trim() || "Your Business Name"
-    : "Your Business Name";
-
-  const description = exists("businessDescription")
-    ? $("businessDescription").value.trim() || "Your business description will appear here..."
-    : "Your business description will appear here...";
-
-  const category = exists("businessCategory")
-    ? $("businessCategory").value || "Select category"
-    : "Select category";
-
-  if (exists("previewBusinessName")) $("previewBusinessName").textContent = name;
-  if (exists("previewBusinessDescription")) $("previewBusinessDescription").textContent = description;
-  if (exists("previewBusinessCategory")) $("previewBusinessCategory").textContent = category;
-
-  if (exists("businessCharCount") && exists("businessDescription")) {
-    $("businessCharCount").textContent = $("businessDescription").value.length;
-  }
-
-  updateBusinessSubmitState();
-}
-
-function updateBusinessSubmitState() {
-  if (!exists("businessSubmitBtn")) return;
-
-  const name = exists("businessName") ? $("businessName").value.trim() : "";
-  const description = exists("businessDescription") ? $("businessDescription").value.trim() : "";
-  const category = exists("businessCategory") ? $("businessCategory").value.trim() : "";
-  const hasLogo = exists("businessLogo") ? $("businessLogo").files.length > 0 : false;
-
-  const ready = !!(name && description && category && hasLogo);
-
-  $("businessSubmitBtn").disabled = !ready;
-  $("businessSubmitBtn").classList.toggle("enabled", ready);
-  $("businessSubmitBtn").textContent = ready
-    ? "Submit for Review"
-    : "Complete all fields to submit";
-}
-
-function setupBusinessCategoryButtons() {
-  document.querySelectorAll(".promote-category-btn").forEach((button) => {
-    button.addEventListener("click", () => {
-      document.querySelectorAll(".promote-category-btn").forEach((btn) => {
-        btn.classList.remove("active");
-      });
-
-      button.classList.add("active");
-
-      if (exists("businessCategory")) {
-        $("businessCategory").value = button.dataset.category;
-      }
-
-      updateBusinessPreview();
-    });
-  });
-}
-
-function setupBusinessLogoPreview() {
-  if (!exists("businessLogo") || !exists("previewLogoArea")) return;
-
-  $("businessLogo").addEventListener("change", (event) => {
-    const file = event.target.files[0];
-
-    if (!file) {
-      $("previewLogoArea").innerHTML = '<span class="preview-camera">📷</span>';
-      updateBusinessSubmitState();
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      $("previewLogoArea").innerHTML = `<img src="${reader.result}" alt="Business logo preview" class="preview-logo-image">`;
-    };
-    reader.readAsDataURL(file);
-
-    updateBusinessSubmitState();
-  });
-}
-
-function handleLogout() {
-  clearSession();
-  appState.selectedInterests = [];
-  renderNav();
-  showView("landingView");
-}
 
 function handleLandingContinue() {
   if (!appState.currentUser) {
@@ -1164,6 +1196,8 @@ function handleStartExploringByInterest() {
   });
 }
 
+
+
 function setupFilters() {
   document.querySelectorAll(".chip").forEach((chip) => {
     chip.addEventListener("click", () => {
@@ -1213,12 +1247,15 @@ function setupMenuToggle() {
   });
 }
 
+
 function bindEvents() {
   if (exists("causeSearchInput")) {
     $("causeSearchInput").addEventListener("input", renderCauses);
   }
 
-  if (exists("discoverBtn")) $("discoverBtn").addEventListener("click", scrollToCauses);
+  if (exists("discoverBtn")) {
+    $("discoverBtn").addEventListener("click", scrollToCauses);
+  }
 
   if (exists("startExploringBtn")) {
     $("startExploringBtn").addEventListener("click", handleLandingContinue);
@@ -1238,9 +1275,6 @@ function bindEvents() {
   if (exists("goDashboardAfterJoin")) {
     $("goDashboardAfterJoin").addEventListener("click", () => showView("dashboardView"));
   }
-  if (exists("campaignForm")) {
-  $("campaignForm").addEventListener("submit", handleCampaignSubmit);
-}
   if (exists("confirmLogoutBtn")) $("confirmLogoutBtn").addEventListener("click", handleLogout);
 
   if (exists("businessForm")) $("businessForm").addEventListener("submit", handleBusinessSubmit);
@@ -1250,6 +1284,10 @@ function bindEvents() {
 
   if (exists("businessSearchInput")) {
     $("businessSearchInput").addEventListener("input", renderBusinesses);
+  }
+
+  if (exists("campaignForm")) {
+    $("campaignForm").addEventListener("submit", handleCampaignSubmit);
   }
 
   if (exists("interestContinueBtn")) {
@@ -1308,6 +1346,7 @@ function bindEvents() {
   setupBusinessCategoryButtons();
   setupBusinessLogoPreview();
 }
+
 
 function init() {
   if (appState.currentUser) {

@@ -690,6 +690,14 @@
               </div>
             </button>
 
+            <button class="quick-action-card" data-target="campaignSubmitView" type="button">
+  <span class="quick-action-icon">📢</span>
+  <div>
+    <strong>Submit Campaign</strong>
+    <span>Create a new campaign</span>
+  </div>
+</button>
+
             <button class="quick-action-card" data-target="businessDirectoryView" type="button">
               <span class="quick-action-icon">🏪</span>
               <div>
@@ -712,34 +720,53 @@
 
     <section id="campaignSubmitView" class="view">
   <div class="panel">
+    <p class="eyebrow">CAMPAIGN SUBMISSION</p>
     <h2>Submit a Campaign</h2>
-    <form id="campaignForm">
-      <label>
+    <p class="small-muted">
+      Campaigns are reviewed by admin before appearing publicly.
+    </p>
+
+    <form id="campaignForm" class="auth-form">
+      <label class="auth-label">
         <span>Title</span>
-        <input id="campaignTitle" type="text" required />
+        <div class="input-wrap">
+          <input id="campaignTitle" type="text" placeholder="Campaign title" required />
+        </div>
       </label>
 
-      <label>
+      <label class="auth-label">
         <span>Description</span>
-        <textarea id="campaignDescription" rows="5" required></textarea>
+        <div class="input-wrap">
+          <textarea id="campaignDescription" rows="5" placeholder="Describe your campaign" required></textarea>
+        </div>
       </label>
 
-      <label>
+      <label class="auth-label">
         <span>Category</span>
-        <input id="campaignCategory" type="text" required />
+        <div class="input-wrap">
+          <input id="campaignCategory" type="text" placeholder="e.g. Environment" required />
+        </div>
       </label>
 
-      <label>
+      <label class="auth-label">
         <span>Goal Amount</span>
-        <input id="campaignGoalAmount" type="number" min="1" required />
+        <div class="input-wrap">
+          <input id="campaignGoalAmount" type="number" min="1" placeholder="Enter goal amount" required />
+        </div>
       </label>
 
-      <label>
+      <label class="auth-label">
         <span>Campaign Image</span>
-        <input id="campaignImage" type="file" accept=".png,.jpg,.jpeg,.webp" required />
+        <div class="input-wrap">
+          <input id="campaignImage" type="file" accept=".png,.jpg,.jpeg,.webp" required />
+        </div>
       </label>
 
-      <button class="btn btn-primary" type="submit">Submit Campaign</button>
+      <div class="section-actions">
+        <button class="btn btn-primary" type="submit">Submit Campaign</button>
+        <button class="btn btn-secondary" data-target="dashboardView" type="button">Cancel</button>
+      </div>
+
       <p id="campaignMsg" class="form-message"></p>
     </form>
   </div>
@@ -747,8 +774,9 @@
 
 <section id="adminDashboardView" class="view">
   <div class="panel">
+    <p class="eyebrow">ADMIN REVIEW</p>
     <h2>Admin Dashboard</h2>
-    <p>Review pending campaigns below.</p>
+    <p class="small-muted">Pending campaigns waiting for approval or rejection.</p>
     <div id="adminPendingCampaignsList"></div>
   </div>
 </section>
