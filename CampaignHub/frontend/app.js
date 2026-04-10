@@ -133,6 +133,69 @@ function showView(viewId) {
   closeMobileMenu();
 }
 
+function showBusinessDetailsModal(business) {
+  const modal = $("businessDetailModal");
+  const title = $("businessDetailTitle");
+  const body = $("businessDetailBody");
+
+  if (!modal || !title || !body) return;
+
+  const displayName = business.business_name || "Unnamed Business";
+  const displayCategory = business.category || business.industry || "General";
+  const displayDescription = business.description || "No description available.";
+  const displayImage = business.image_url || "";
+  const displayWebsite = business.website || "";
+  const displayTrending = business.trending || "New";
+
+  title.textContent = displayName;
+
+  body.innerHTML = `
+    <div class="business-modal-layout">
+      ${
+        displayImage
+          ? `<div class="business-modal-image-wrap">
+               <img src="${displayImage}" alt="${displayName}" class="business-detail-modal-image">
+             </div>`
+          : ""
+      }
+
+      <div class="business-modal-info">
+        <div class="business-modal-tags">
+          <span class="business-modal-pill">${displayCategory}</span>
+          <span class="business-modal-pill subtle">${displayTrending}</span>
+        </div>
+
+        <div class="business-modal-section">
+          <h4>About</h4>
+          <p>${displayDescription}</p>
+        </div>
+
+        <div class="business-modal-section">
+          <h4>Link</h4>
+          ${
+            displayWebsite
+              ? `<a href="${displayWebsite}" target="_blank" rel="noopener noreferrer" class="business-modal-link-btn">
+                   ↗ Visit Website
+                 </a>`
+              : `<p class="small-muted">No website provided.</p>`
+          }
+        </div>
+      </div>
+    </div>
+  `;
+
+  modal.classList.remove("hidden");
+  document.body.classList.add("modal-open");
+}
+
+function closeBusinessDetailsModal() {
+  const modal = $("businessDetailModal");
+  if (modal) {
+    modal.classList.add("hidden");
+  }
+  document.body.classList.remove("modal-open");
+}
+
 function scrollToCauses() {
   showView("landingView");
 
@@ -649,14 +712,12 @@ function renderBusinesses() {
     const displayCategory = business.category || business.industry || "General";
     const displayDescription = business.description || "No description available.";
     const displayImage = business.image_url || "images/business-eco.jpg";
-    const displayRating = business.rating || "4.8";
     const displayTrending = business.trending || "New";
+    const displayWebsite = business.website || "";
 
     card.innerHTML = `
       <div class="business-directory-image-wrap">
         <div class="business-directory-image" style="background-image: url('${displayImage}');"></div>
-        <div class="business-rating-badge">⭐ ${displayRating}</div>
-        <button class="business-fav-btn" type="button">♡</button>
       </div>
 
       <div class="business-directory-body">
@@ -670,16 +731,22 @@ function renderBusinesses() {
         </div>
 
         <button class="business-visit-btn" type="button">
-          ${business.website ? "↗ Visit Website" : "↗ View Business"}
+          ↗ View Business
         </button>
       </div>
     `;
 
+    card.addEventListener("click", () => {
+      showBusinessDetailsModal(business);
+    });
+
     const visitBtn = card.querySelector(".business-visit-btn");
-    if (visitBtn && business.website) {
+    if (visitBtn) {
       visitBtn.addEventListener("click", (event) => {
         event.stopPropagation();
-        window.open(business.website, "_blank", "noopener,noreferrer");
+        if (displayWebsite) {
+          window.open(displayWebsite, "_blank", "noopener,noreferrer");
+        }
       });
     }
 
@@ -699,13 +766,14 @@ async function handleBusinessSubmit(event) {
   const businessName = exists("businessName") ? $("businessName").value.trim() : "";
   const description = exists("businessDescription") ? $("businessDescription").value.trim() : "";
   const category = exists("businessCategory") ? $("businessCategory").value.trim() : "";
+  const website = exists("businessWebsite") ? $("businessWebsite").value.trim() : "";
   const logoFile = exists("businessLogo") ? $("businessLogo").files[0] : null;
 
   if (exists("businessMsg")) $("businessMsg").textContent = "";
 
-  if (!businessName || !description || !category || !logoFile) {
+  if (!businessName || !description || !category || !website || !logoFile) {
     if (exists("businessMsg")) {
-      $("businessMsg").textContent = "Please complete all business fields and upload a logo.";
+      $("businessMsg").textContent = "Please complete all business fields, add a website link, and upload a logo.";
     }
     return;
   }
@@ -716,7 +784,7 @@ async function handleBusinessSubmit(event) {
     formData.append("category", category);
     formData.append("description", description);
     formData.append("industry", category);
-    formData.append("rating", "4.8");
+    formData.append("website", website);
     formData.append("trending", "New");
     formData.append("image", logoFile);
 
@@ -745,7 +813,6 @@ async function handleBusinessSubmit(event) {
     });
 
     if (exists("businessCategory")) $("businessCategory").value = "";
-
     if (exists("previewLogoArea")) {
       $("previewLogoArea").innerHTML = '<span class="preview-camera">📷</span>';
     }
@@ -1340,6 +1407,25 @@ function bindEvents() {
     });
   }
 
+  if (exists("closeBusinessDetailModal")) {
+  $("closeBusinessDetailModal").addEventListener("click", closeBusinessDetailsModal);
+}
+
+if (exists("closeBusinessDetailModal")) {
+  $("closeBusinessDetailModal").addEventListener("click", closeBusinessDetailsModal);
+}
+
+if (exists("businessDetailModal")) {
+  $("businessDetailModal").addEventListener("click", (event) => {
+    if (
+      event.target.classList.contains("custom-modal-backdrop") ||
+      event.target.id === "businessDetailModal"
+    ) {
+      closeBusinessDetailsModal();
+    }
+  });
+}
+
   setupFilters();
   setupViewButtons();
   setupMenuToggle();
@@ -1349,6 +1435,9 @@ function bindEvents() {
 
 
 function init() {
+
+  document.body.classList.remove("modal-open");
+  
   if (appState.currentUser) {
     appState.selectedInterests = loadSelectedInterests(appState.currentUser);
   }

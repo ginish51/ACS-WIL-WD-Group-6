@@ -396,6 +396,16 @@
 
               <p class="promote-char-count"><span id="businessCharCount">0</span>/500 characters</p>
 
+                            <label class="promote-label">
+                <span>Business Website / Link *</span>
+                <input
+                  id="businessWebsite"
+                  type="url"
+                  placeholder="https://yourbusiness.com"
+                  required
+                />
+              </label>
+
               <div class="promote-label-group">
                 <span class="promote-group-title">Impact Category * (select all that apply)</span>
 
@@ -802,6 +812,26 @@
         </p>
       </div>
     </section>
+
+<section id="businessDetailModal" class="custom-modal hidden">
+  <div class="custom-modal-backdrop"></div>
+
+  <div class="custom-modal-content business-modal-card">
+    <div class="custom-modal-header">
+      <div>
+        <p class="modal-eyebrow">BUSINESS PROFILE</p>
+        <h3 id="businessDetailTitle">Business Details</h3>
+      </div>
+
+      <button id="closeBusinessDetailModal" type="button" class="custom-modal-close" aria-label="Close modal">
+        ✕
+      </button>
+    </div>
+
+    <div id="businessDetailBody" class="custom-modal-body"></div>
+  </div>
+</section>
+
   </main>
 
   <footer class="site-footer">
