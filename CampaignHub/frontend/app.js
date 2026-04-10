@@ -8,9 +8,16 @@ const appState = {
   joinedCampaigns: JSON.parse(localStorage.getItem("joinedCampaigns") || "[]"),
   businesses: [],
   campaigns: [],
+  myCampaigns: [],
   selectedCause: null,
   activeCauseFilter: "all",
-  selectedInterests: []
+  selectedInterests: [],
+  campaignStats: {
+    active_count: 0,
+    pending_count: 0,
+    rejected_count: 0
+  },
+  adminPendingCampaigns: []
 };
 
 function $(id) {
@@ -178,6 +185,18 @@ function renderNav() {
     );
   }
 
+  if (exists("campaignSubmitView")) {
+  const campaignBtn = document.createElement("button");
+  campaignBtn.className = "nav-dropdown-item";
+  campaignBtn.type = "button";
+  campaignBtn.textContent = "Submit Campaign";
+  campaignBtn.addEventListener("click", () => {
+    showView("campaignSubmitView");
+    closeMobileMenu();
+  });
+  menu.appendChild(campaignBtn);
+}
+
   if (appState.currentUser) {
     const dropdown = document.createElement("div");
     dropdown.className = "nav-dropdown";
@@ -201,6 +220,19 @@ function renderNav() {
       });
       menu.appendChild(dashboardBtn);
     }
+
+    if (appState.currentUser?.role === "admin" && exists("adminDashboardView")) {
+  const adminBtn = document.createElement("button");
+  adminBtn.className = "nav-dropdown-item";
+  adminBtn.type = "button";
+  adminBtn.textContent = "Admin Dashboard";
+  adminBtn.addEventListener("click", () => {
+    loadAdminPendingCampaigns();
+    showView("adminDashboardView");
+    closeMobileMenu();
+  });
+  menu.appendChild(adminBtn);
+}
 
     if (exists("promoteBusinessView")) {
       const promoteBtn = document.createElement("button");
@@ -324,6 +356,206 @@ function openCauseDetail(causeId) {
   }
 
   showView("causeDetailView");
+}
+
+async function loadMyCampaignStats() {
+  if (!appState.currentUser || !appState.token) return;
+
+  try {
+    const stats = await apiRequest("/api/my-campaign-stats");
+    appState.campaignStats = stats || {
+      active_count: 0,
+      pending_count: 0,
+      rejected_count: 0
+    };
+
+    if (exists("userActiveCampaigns")) {
+      $("userActiveCampaigns").textContent = appState.campaignStats.active_count || 0;
+    }
+    if (exists("userPendingCampaigns")) {
+      $("userPendingCampaigns").textContent = appState.campaignStats.pending_count || 0;
+    }
+    if (exists("userRejectedCampaigns")) {
+      $("userRejectedCampaigns").textContent = appState.campaignStats.rejected_count || 0;
+    }
+  } catch (error) {
+    console.error("Failed to load campaign stats:", error);
+  }
+}
+
+async function loadMyCampaigns() {
+  if (!appState.currentUser || !appState.token) return;
+
+  try {
+    const campaigns = await apiRequest("/api/my-campaigns");
+    appState.myCampaigns = Array.isArray(campaigns) ? campaigns : [];
+    renderMyCampaigns();
+  } catch (error) {
+    console.error("Failed to load my campaigns:", error);
+  }
+}
+
+function renderMyCampaigns() {
+  const container = $("myCampaignsList");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  if (!appState.myCampaigns.length) {
+    container.innerHTML = `<p class="small-muted">You have not submitted any campaigns yet.</p>`;
+    return;
+  }
+
+  appState.myCampaigns.forEach((campaign) => {
+    const item = document.createElement("div");
+    item.className = "info-card";
+    item.innerHTML = `
+      <h3>${campaign.title}</h3>
+      <p>${campaign.description || "No description available."}</p>
+      <p><strong>Status:</strong> ${campaign.status}</p>
+      ${campaign.rejection_reason ? `<p><strong>Reason:</strong> ${campaign.rejection_reason}</p>` : ""}
+    `;
+    container.appendChild(item);
+  });
+}
+
+async function handleCampaignSubmit(event) {
+  event.preventDefault();
+
+  if (!appState.currentUser) {
+    showView("authView");
+    setAuthMode("login");
+    return;
+  }
+
+  const title = exists("campaignTitle") ? $("campaignTitle").value.trim() : "";
+  const description = exists("campaignDescription") ? $("campaignDescription").value.trim() : "";
+  const category = exists("campaignCategory") ? $("campaignCategory").value.trim() : "";
+  const goalAmount = exists("campaignGoalAmount") ? $("campaignGoalAmount").value.trim() : "";
+  const imageFile = exists("campaignImage") ? $("campaignImage").files[0] : null;
+
+  if (exists("campaignMsg")) $("campaignMsg").textContent = "";
+
+  if (!title || !description || !category || !goalAmount || !imageFile) {
+    if (exists("campaignMsg")) {
+      $("campaignMsg").textContent = "Please complete all campaign fields and upload an image.";
+    }
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("category", category);
+    formData.append("goal_amount", goalAmount);
+    formData.append("image", imageFile);
+
+    const response = await fetch(`${API_BASE}/api/campaigns`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${appState.token}`
+      },
+      body: formData
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to submit campaign.");
+    }
+
+    if (exists("campaignMsg")) {
+      $("campaignMsg").textContent = "Campaign submitted for admin approval.";
+    }
+
+    if (exists("campaignForm")) $("campaignForm").reset();
+
+    await loadMyCampaignStats();
+    await loadMyCampaigns();
+  } catch (error) {
+    if (exists("campaignMsg")) {
+      $("campaignMsg").textContent = error.message || "Failed to submit campaign.";
+    }
+  }
+}
+
+async function loadAdminPendingCampaigns() {
+  if (!appState.currentUser || appState.currentUser.role !== "admin") return;
+
+  try {
+    const campaigns = await apiRequest("/api/admin/campaigns/pending");
+    appState.adminPendingCampaigns = Array.isArray(campaigns) ? campaigns : [];
+    renderAdminPendingCampaigns();
+  } catch (error) {
+    console.error("Failed to load admin pending campaigns:", error);
+  }
+}
+
+function renderAdminPendingCampaigns() {
+  const container = $("adminPendingCampaignsList");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  if (!appState.adminPendingCampaigns.length) {
+    container.innerHTML = `<p class="small-muted">No pending campaigns.</p>`;
+    return;
+  }
+
+  appState.adminPendingCampaigns.forEach((campaign) => {
+    const item = document.createElement("div");
+    item.className = "info-card";
+    item.innerHTML = `
+      <h3>${campaign.title}</h3>
+      <p>${campaign.description || "No description available."}</p>
+      <p><strong>Category:</strong> ${campaign.category || "General"}</p>
+      <p><strong>Status:</strong> ${campaign.status}</p>
+      ${campaign.image_url ? `<img src="${campaign.image_url}" alt="${campaign.title}" style="max-width: 220px; border-radius: 12px; margin-top: 10px;">` : ""}
+      <div style="margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap;">
+        <button class="btn btn-primary" type="button" data-approve-id="${campaign.id}">Approve</button>
+        <button class="btn btn-secondary" type="button" data-reject-id="${campaign.id}">Reject</button>
+      </div>
+    `;
+    container.appendChild(item);
+  });
+
+  container.querySelectorAll("[data-approve-id]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      await approveCampaign(btn.dataset.approveId);
+    });
+  });
+
+  container.querySelectorAll("[data-reject-id]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const reason = prompt("Enter rejection reason (optional):") || "";
+      await rejectCampaign(btn.dataset.rejectId, reason);
+    });
+  });
+}
+
+async function approveCampaign(campaignId) {
+  try {
+    await apiRequest(`/api/admin/campaigns/${campaignId}/approve`, {
+      method: "PATCH"
+    });
+    await loadAdminPendingCampaigns();
+    await loadCampaigns();
+  } catch (error) {
+    alert(error.message || "Failed to approve campaign.");
+  }
+}
+
+async function rejectCampaign(campaignId, rejectionReason) {
+  try {
+    await apiRequest(`/api/admin/campaigns/${campaignId}/reject`, {
+      method: "PATCH",
+      body: JSON.stringify({ rejection_reason: rejectionReason })
+    });
+    await loadAdminPendingCampaigns();
+  } catch (error) {
+    alert(error.message || "Failed to reject campaign.");
+  }
 }
 
 function renderBusinesses() {
@@ -450,6 +682,9 @@ function updateDashboard() {
       });
     }
   }
+
+  loadMyCampaignStats();
+loadMyCampaigns();
 }
 
 function setAuthMode(mode) {
@@ -1003,6 +1238,9 @@ function bindEvents() {
   if (exists("goDashboardAfterJoin")) {
     $("goDashboardAfterJoin").addEventListener("click", () => showView("dashboardView"));
   }
+  if (exists("campaignForm")) {
+  $("campaignForm").addEventListener("submit", handleCampaignSubmit);
+}
   if (exists("confirmLogoutBtn")) $("confirmLogoutBtn").addEventListener("click", handleLogout);
 
   if (exists("businessForm")) $("businessForm").addEventListener("submit", handleBusinessSubmit);
@@ -1084,6 +1322,10 @@ function init() {
 
   if (appState.currentUser && exists("dashboardView")) {
     updateDashboard();
+  }
+
+  if (appState.currentUser?.role === "admin" && exists("adminDashboardView")) {
+    loadAdminPendingCampaigns();
   }
 
   showView("landingView");

@@ -6,6 +6,7 @@ const fs = require("fs");
 const multer = require("multer");
 const db = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
+const { authenticateToken } = require("./utils/auth");
 
 const app = express();
 
@@ -25,7 +26,7 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 
-// uploads directory
+// uploads
 const uploadsRoot = path.join(__dirname, "../uploads");
 const businessUploadsDir = path.join(uploadsRoot, "businesses");
 const campaignUploadsDir = path.join(uploadsRoot, "campaigns");
@@ -36,10 +37,8 @@ const campaignUploadsDir = path.join(uploadsRoot, "campaigns");
   }
 });
 
-// serve uploaded files
 app.use("/uploads", express.static(uploadsRoot));
 
-// multer storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     if (req.path.includes("/api/businesses")) {
@@ -74,10 +73,16 @@ const upload = multer({
   }
 });
 
-// create business with image upload
-app.post("/api/businesses", upload.single("image"), (req, res) => {
+function requireAdmin(req, res, next) {
+  if (!req.user || req.user.role !== "admin") {
+    return res.status(403).json({ message: "Admin access required." });
+  }
+  next();
+}
+
+// businesses
+app.post("/api/businesses", upload.single("image"), authenticateToken, (req, res) => {
   const {
-    user_id,
     business_name,
     category,
     description,
@@ -105,7 +110,7 @@ app.post("/api/businesses", upload.single("image"), (req, res) => {
   db.run(
     sql,
     [
-      user_id || null,
+      req.user.id,
       business_name,
       category || null,
       description || null,
@@ -128,7 +133,6 @@ app.post("/api/businesses", upload.single("image"), (req, res) => {
   );
 });
 
-// get businesses
 app.get("/api/businesses", (req, res) => {
   db.all("SELECT * FROM businesses ORDER BY id DESC", [], (err, rows) => {
     if (err) return res.status(500).json({ message: err.message });
@@ -136,16 +140,13 @@ app.get("/api/businesses", (req, res) => {
   });
 });
 
-// create campaign with image upload
-app.post("/api/campaigns", upload.single("image"), (req, res) => {
+// campaigns: submit -> pending
+app.post("/api/campaigns", upload.single("image"), authenticateToken, (req, res) => {
   const {
     title,
     description,
     category,
-    goal_amount,
-    current_amount,
-    creator_id,
-    status
+    goal_amount
   } = req.body;
 
   if (!title) {
@@ -170,15 +171,15 @@ app.post("/api/campaigns", upload.single("image"), (req, res) => {
       category || null,
       image_url,
       goal_amount || null,
-      current_amount || 0,
-      creator_id || null,
-      status || "active"
+      0,
+      req.user.id,
+      "pending"
     ],
     function (err) {
       if (err) return res.status(400).json({ message: err.message });
 
       res.status(201).json({
-        message: "Campaign created successfully.",
+        message: "Campaign submitted for approval.",
         id: this.lastID,
         image_url
       });
@@ -186,22 +187,101 @@ app.post("/api/campaigns", upload.single("image"), (req, res) => {
   );
 });
 
-// get campaigns
+// public landing page campaigns: only active
 app.get("/api/campaigns", (req, res) => {
-  db.all("SELECT * FROM campaigns ORDER BY id DESC", [], (err, rows) => {
+  db.all(
+    "SELECT * FROM campaigns WHERE status = 'active' ORDER BY id DESC",
+    [],
+    (err, rows) => {
+      if (err) return res.status(500).json({ message: err.message });
+      res.json(rows);
+    }
+  );
+});
+
+// logged-in user's campaigns
+app.get("/api/my-campaigns", authenticateToken, (req, res) => {
+  db.all(
+    "SELECT * FROM campaigns WHERE creator_id = ? ORDER BY id DESC",
+    [req.user.id],
+    (err, rows) => {
+      if (err) return res.status(500).json({ message: err.message });
+      res.json(rows);
+    }
+  );
+});
+
+app.get("/api/my-campaign-stats", authenticateToken, (req, res) => {
+  const sql = `
+    SELECT
+      SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) AS active_count,
+      SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) AS pending_count,
+      SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) AS rejected_count
+    FROM campaigns
+    WHERE creator_id = ?
+  `;
+
+  db.get(sql, [req.user.id], (err, row) => {
     if (err) return res.status(500).json({ message: err.message });
-    res.json(rows);
+    res.json({
+      active_count: row?.active_count || 0,
+      pending_count: row?.pending_count || 0,
+      rejected_count: row?.rejected_count || 0
+    });
   });
+});
+
+// admin dashboard
+app.get("/api/admin/campaigns/pending", authenticateToken, requireAdmin, (req, res) => {
+  db.all(
+    "SELECT * FROM campaigns WHERE status = 'pending' ORDER BY id DESC",
+    [],
+    (err, rows) => {
+      if (err) return res.status(500).json({ message: err.message });
+      res.json(rows);
+    }
+  );
+});
+
+app.patch("/api/admin/campaigns/:id/approve", authenticateToken, requireAdmin, (req, res) => {
+  const { id } = req.params;
+
+  db.run(
+    `UPDATE campaigns
+     SET status = 'active', reviewed_at = datetime('now'), rejection_reason = NULL
+     WHERE id = ?`,
+    [id],
+    function (err) {
+      if (err) return res.status(400).json({ message: err.message });
+      res.json({ message: "Campaign approved." });
+    }
+  );
+});
+
+app.patch("/api/admin/campaigns/:id/reject", authenticateToken, requireAdmin, (req, res) => {
+  const { id } = req.params;
+  const { rejection_reason } = req.body;
+
+  db.run(
+    `UPDATE campaigns
+     SET status = 'rejected', reviewed_at = datetime('now'), rejection_reason = ?
+     WHERE id = ?`,
+    [rejection_reason || null, id],
+    function (err) {
+      if (err) return res.status(400).json({ message: err.message });
+      res.json({ message: "Campaign rejected." });
+    }
+  );
 });
 
 app.get("/api/users", (req, res) => {
-  db.all("SELECT id, name, email FROM users", [], (err, rows) => {
+  db.all("SELECT id, name, email, role FROM users", [], (err, rows) => {
     if (err) return res.status(500).json({ message: err.message });
     res.json(rows);
   });
 });
 
-// multer / generic error handler
+// upload / generic error
 app.use((err, req, res, next) => {
   if (err) {
     return res.status(400).json({ message: err.message || "Upload failed." });

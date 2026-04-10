@@ -1,5 +1,3 @@
-console.log("AUTH ROUTES FILE LOADED");
-
 const express = require("express");
 const bcrypt = require("bcrypt");
 const db = require("../config/db");
@@ -27,11 +25,11 @@ function getUserByEmail(email) {
 function createUser(name, email, passwordHash) {
   return new Promise((resolve, reject) => {
     db.run(
-      "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)",
-      [name, email, passwordHash],
+      "INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)",
+      [name, email, passwordHash, "user"],
       function (err) {
         if (err) reject(err);
-        else resolve({ id: this.lastID, name, email });
+        else resolve({ id: this.lastID, name, email, role: "user" });
       }
     );
   });
@@ -117,12 +115,11 @@ router.post("/login", async (req, res, next) => {
     const safeUser = {
       id: user.id,
       name: user.name,
-      email: user.email
+      email: user.email,
+      role: user.role
     };
 
     const token = signToken(safeUser);
-
-    console.log("LOGIN SUCCESS:", safeUser);
 
     return res.json({
       message: "Login successful.",
@@ -130,7 +127,6 @@ router.post("/login", async (req, res, next) => {
       user: safeUser
     });
   } catch (error) {
-    console.error("LOGIN ERROR:", error);
     next(error);
   }
 });

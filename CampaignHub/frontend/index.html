@@ -582,6 +582,29 @@
           </article>
         </section>
 
+        <section class="dashboard-panel">
+  <h3 class="dashboard-panel-title">My Campaign Status</h3>
+  <div class="quick-actions-grid">
+    <div class="dashboard-stat-card">
+      <h3 id="userActiveCampaigns">0</h3>
+      <p class="dashboard-stat-title">Active Campaigns</p>
+    </div>
+    <div class="dashboard-stat-card">
+      <h3 id="userPendingCampaigns">0</h3>
+      <p class="dashboard-stat-title">Pending Campaigns</p>
+    </div>
+    <div class="dashboard-stat-card">
+      <h3 id="userRejectedCampaigns">0</h3>
+      <p class="dashboard-stat-title">Rejected Campaigns</p>
+    </div>
+  </div>
+</section>
+
+<section class="dashboard-panel">
+  <h3 class="dashboard-panel-title">My Submitted Campaigns</h3>
+  <div id="myCampaignsList"></div>
+</section>
+
         <div class="dashboard-tabs">
           <button class="dashboard-tab active" type="button">Overview</button>
           <button class="dashboard-tab" type="button">Activity</button>
@@ -686,6 +709,49 @@
         </section>
       </div>
     </section>
+
+    <section id="campaignSubmitView" class="view">
+  <div class="panel">
+    <h2>Submit a Campaign</h2>
+    <form id="campaignForm">
+      <label>
+        <span>Title</span>
+        <input id="campaignTitle" type="text" required />
+      </label>
+
+      <label>
+        <span>Description</span>
+        <textarea id="campaignDescription" rows="5" required></textarea>
+      </label>
+
+      <label>
+        <span>Category</span>
+        <input id="campaignCategory" type="text" required />
+      </label>
+
+      <label>
+        <span>Goal Amount</span>
+        <input id="campaignGoalAmount" type="number" min="1" required />
+      </label>
+
+      <label>
+        <span>Campaign Image</span>
+        <input id="campaignImage" type="file" accept=".png,.jpg,.jpeg,.webp" required />
+      </label>
+
+      <button class="btn btn-primary" type="submit">Submit Campaign</button>
+      <p id="campaignMsg" class="form-message"></p>
+    </form>
+  </div>
+</section>
+
+<section id="adminDashboardView" class="view">
+  <div class="panel">
+    <h2>Admin Dashboard</h2>
+    <p>Review pending campaigns below.</p>
+    <div id="adminPendingCampaignsList"></div>
+  </div>
+</section>
 
     <!-- logout -->
     <section id="logoutView" class="view">

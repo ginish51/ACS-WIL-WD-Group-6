@@ -1,5 +1,6 @@
 const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
+const bcrypt = require("bcrypt");
 
 const dbPath = path.resolve(__dirname, "../../campaignhub.db");
 
@@ -53,12 +54,47 @@ db.serialize(() => {
     goal_amount REAL,
     current_amount REAL DEFAULT 0,
     creator_id INTEGER,
-    status TEXT DEFAULT 'active',
+    status TEXT DEFAULT 'pending',
+    reviewed_at DATETIME,
+    rejection_reason TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (creator_id) REFERENCES users (id)
   )`);
 
   db.run(`ALTER TABLE campaigns ADD COLUMN image_url TEXT`, () => {});
+  db.run(`ALTER TABLE campaigns ADD COLUMN reviewed_at DATETIME`, () => {});
+  db.run(`ALTER TABLE campaigns ADD COLUMN rejection_reason TEXT`, () => {});
+  db.run(`ALTER TABLE campaigns ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP`, () => {});
 
+  // seed one admin account
+  const adminEmail = "admin@impacthub.com";
+  const adminPassword = "Admin123!";
+  const adminName = "Impact Hub Admin";
+  const adminHash = bcrypt.hashSync(adminPassword, 10);
+
+  db.get("SELECT id FROM users WHERE email = ?", [adminEmail], (err, row) => {
+    if (err) {
+      console.error("Admin check error:", err.message);
+      return;
+    }
+
+    if (!row) {
+      db.run(
+        `INSERT INTO users (name, email, password_hash, role)
+         VALUES (?, ?, ?, ?)`,
+        [adminName, adminEmail, adminHash, "admin"],
+        (insertErr) => {
+          if (insertErr) {
+            console.error("Admin insert error:", insertErr.message);
+          } else {
+            console.log("Seeded admin account:", adminEmail);
+          }
+        }
+      );
+    }
+  });
+
+  // optional sample active campaign
   db.get("SELECT COUNT(*) AS count FROM campaigns", (err, row) => {
     if (err) {
       console.error("Count campaigns error:", err.message);
@@ -67,13 +103,15 @@ db.serialize(() => {
 
     if (row && row.count === 0) {
       db.run(
-        `INSERT INTO campaigns (title, description, category, image_url)
-         VALUES (?, ?, ?, ?)`,
+        `INSERT INTO campaigns
+         (title, description, category, image_url, status)
+         VALUES (?, ?, ?, ?, ?)`,
         [
           "Live Ocean Cleanup",
           "Help us save the reefs!",
           "Environment",
-          "images/ocean.jpg"
+          "images/ocean.jpg",
+          "active"
         ]
       );
     }
