@@ -539,60 +539,60 @@
     <!-- dashboard -->
     <section id="dashboardView" class="view">
       <div class="dashboard-shell">
-        <section class="dashboard-profile-card">
-          <div class="dashboard-profile-left">
-            <div class="dashboard-avatar-box">
-              <svg viewBox="0 0 24 24" class="dashboard-avatar-icon" aria-hidden="true">
-                <circle cx="12" cy="8" r="3.2"></circle>
-                <path d="M6.5 18.2C6.5 14.9 8.8 13 12 13C15.2 13 17.5 14.9 17.5 18.2"></path>
-              </svg>
-            </div>
+<section class="dashboard-profile-card">
+  <div class="dashboard-profile-left">
+    <div class="dashboard-avatar-box">
+      <svg viewBox="0 0 24 24" class="dashboard-avatar-icon" aria-hidden="true">
+        <circle cx="12" cy="8" r="3.2"></circle>
+        <path d="M6.5 18.2C6.5 14.9 8.8 13 12 13C15.2 13 17.5 14.9 17.5 18.2"></path>
+      </svg>
+    </div>
 
-            <div class="dashboard-profile-info">
-              <h2 id="dashboardName">Sarah Johnson</h2>
-              <p id="dashboardMeta">Impact Maker since January 2026</p>
+    <div class="dashboard-profile-info">
+      <h2 id="dashboardName">User Name</h2>
+      <p id="dashboardMeta">Impact Maker</p>
 
-              <div class="dashboard-badges">
-                <span class="dashboard-badge badge-level">Level 5</span>
-                <span class="dashboard-badge badge-streak">🔥 12 Day Streak</span>
-              </div>
-            </div>
-          </div>
+      <div class="dashboard-badges">
+        <span class="dashboard-badge badge-level">Level 1</span>
+        <span class="dashboard-badge badge-streak">🔥 1 Day Streak</span>
+      </div>
+    </div>
+  </div>
 
-          <button class="dashboard-edit-btn" type="button">Edit Profile</button>
-        </section>
+  <!--<button class="dashboard-edit-btn" type="button">Edit Profile</button>-->
+</section>
 
-        <section class="dashboard-stats-grid">
-          <article class="dashboard-stat-card">
-            <div class="dashboard-stat-icon icon-pink">♡</div>
-            <h3 id="statCampaigns">12</h3>
-            <p class="dashboard-stat-title">Campaigns</p>
-            <span class="dashboard-stat-sub">+3 this month</span>
-          </article>
+<section class="dashboard-stats-grid">
+  <article class="dashboard-stat-card dashboard-clickable-card" id="openJoinedCampaignsCard" role="button" tabindex="0">
+  <div class="dashboard-stat-icon icon-pink">♡</div>
+  <h3 id="statCampaigns">0</h3>
+  <p class="dashboard-stat-title">Campaigns</p>
+  <span class="dashboard-stat-sub">Click to view joined campaigns</span>
+  </article>
 
-          <article class="dashboard-stat-card">
-            <div class="dashboard-stat-icon icon-green">⌘</div>
-            <h3 id="statPoints">350</h3>
-            <p class="dashboard-stat-title">Impact Points</p>
-            <span class="dashboard-stat-sub">+50 this week</span>
-          </article>
+  <article class="dashboard-stat-card">
+    <div class="dashboard-stat-icon icon-green">⌘</div>
+    <h3 id="statPoints">0</h3>
+    <p class="dashboard-stat-title">Impact Points</p>
+    <span class="dashboard-stat-sub">0 to next level</span>
+  </article>
 
-          <article class="dashboard-stat-card">
-            <div class="dashboard-stat-icon icon-blue">🏪</div>
-            <h3 id="statBusinesses">5</h3>
-            <p class="dashboard-stat-title">Businesses</p>
-            <span class="dashboard-stat-sub">Supporting</span>
-          </article>
+  <article class="dashboard-stat-card dashboard-clickable-card" id="openMyBusinessesCard" role="button" tabindex="0">
+  <div class="dashboard-stat-icon icon-blue">🏪</div>
+  <h3 id="statBusinesses">0</h3>
+  <p class="dashboard-stat-title">Businesses</p>
+  <span class="dashboard-stat-sub">Click to view your businesses</span>
+</article>
 
-          <article class="dashboard-stat-card">
-            <div class="dashboard-stat-icon icon-yellow">📅</div>
-            <h3 id="statHours">87</h3>
-            <p class="dashboard-stat-title">Hours</p>
-            <span class="dashboard-stat-sub">Total volunteered</span>
-          </article>
-        </section>
+  <article class="dashboard-stat-card">
+    <div class="dashboard-stat-icon icon-yellow">📅</div>
+    <h3 id="statHours">0</h3>
+    <p class="dashboard-stat-title">Hours</p>
+    <span class="dashboard-stat-sub">0 joined campaigns</span>
+  </article>
+</section>
 
-        <section class="dashboard-panel">
+<section class="dashboard-panel">
   <h3 class="dashboard-panel-title">My Campaign Status</h3>
   <div class="quick-actions-grid">
     <div class="dashboard-stat-card">
@@ -615,118 +615,119 @@
   <div id="myCampaignsList"></div>
 </section>
 
-        <div class="dashboard-tabs">
-          <button class="dashboard-tab active" type="button">Overview</button>
-          <button class="dashboard-tab" type="button">Activity</button>
-          <button class="dashboard-tab" type="button">Achievements</button>
-        </div>
+<div class="dashboard-tabs">
+  <button class="dashboard-tab active" type="button">Overview</button>
+  <button class="dashboard-tab" type="button">Activity</button>
+  <button class="dashboard-tab" type="button">Achievements</button>
+</div>
 
-        <section class="dashboard-main-grid">
-          <article class="dashboard-panel">
-            <h3 class="dashboard-panel-title">↗ Volunteer Hours</h3>
+<section class="dashboard-main-grid">
+  <article class="dashboard-panel">
+    <h3 class="dashboard-panel-title">↗ Volunteer Hours</h3>
 
-            <div class="hours-chart">
-              <div class="hours-y-axis">
-                <span>28</span>
-                <span>21</span>
-                <span>14</span>
-                <span>7</span>
-                <span>0</span>
-              </div>
-
-              <div class="hours-chart-area">
-                <div class="hours-grid-lines"></div>
-                <svg viewBox="0 0 520 240" class="hours-chart-svg" preserveAspectRatio="none" aria-hidden="true">
-                  <path
-                    d="M0,180 L100,145 L200,120 L300,95 L400,55 L520,20 L520,240 L0,240 Z"
-                    class="hours-area-fill"
-                  ></path>
-                  <path
-                    d="M0,180 L100,145 L200,120 L300,95 L400,55 L520,20"
-                    class="hours-line"
-                  ></path>
-                </svg>
-
-                <div class="hours-x-axis">
-                  <span>Oct</span>
-                  <span>Nov</span>
-                  <span>Dec</span>
-                  <span>Jan</span>
-                  <span>Feb</span>
-                  <span>Mar</span>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <article class="dashboard-panel">
-            <h3 class="dashboard-panel-title">Impact by Category</h3>
-
-            <div class="impact-chart-wrap">
-              <div class="impact-pie-chart"></div>
-
-              <div class="impact-chart-label label-education">Education</div>
-              <div class="impact-chart-label label-environment">Environment</div>
-              <div class="impact-chart-label label-community">Community</div>
-              <div class="impact-chart-label label-justice">Justice</div>
-            </div>
-
-            <div class="impact-legend">
-              <span><i class="legend-dot dot-environment"></i>Environment</span>
-              <span><i class="legend-dot dot-education"></i>Education</span>
-              <span><i class="legend-dot dot-community"></i>Community</span>
-              <span><i class="legend-dot dot-justice"></i>Justice</span>
-            </div>
-          </article>
-        </section>
-
-        <section class="dashboard-panel dashboard-interests-panel">
-          <h3 class="dashboard-panel-title">My Interests</h3>
-          <div id="dashboardInterestTags" class="selected-interest-tags"></div>
-          <p class="interest-change-note">
-            To change your interests, go to your profile or dashboard settings.
-          </p>
-        </section>
-
-        <section class="dashboard-panel dashboard-quick-actions">
-          <h3 class="dashboard-panel-title">Quick Actions</h3>
-
-          <div class="quick-actions-grid">
-            <button class="quick-action-card" data-target="landingView" type="button">
-              <span class="quick-action-icon">♡</span>
-              <div>
-                <strong>My Campaigns</strong>
-                <span>View all activities</span>
-              </div>
-            </button>
-
-            <button class="quick-action-card" data-target="campaignSubmitView" type="button">
-  <span class="quick-action-icon">📢</span>
-  <div>
-    <strong>Submit Campaign</strong>
-    <span>Create a new campaign</span>
-  </div>
-</button>
-
-            <button class="quick-action-card" data-target="businessDirectoryView" type="button">
-              <span class="quick-action-icon">🏪</span>
-              <div>
-                <strong>Businesses</strong>
-                <span>Supported companies</span>
-              </div>
-            </button>
-
-            <button class="quick-action-card" data-target="landingView" type="button">
-              <span class="quick-action-icon">↗</span>
-              <div>
-                <strong>Explore More</strong>
-                <span>Find new causes</span>
-              </div>
-            </button>
-          </div>
-        </section>
+    <div class="hours-chart">
+      <div class="hours-y-axis">
+        <span>28</span>
+        <span>21</span>
+        <span>14</span>
+        <span>7</span>
+        <span>0</span>
       </div>
-    </section>
+
+      <div class="hours-chart-area">
+        <div class="hours-grid-lines"></div>
+        <svg viewBox="0 0 520 240" class="hours-chart-svg" preserveAspectRatio="none" aria-hidden="true">
+          <path
+            d="M0,180 L100,145 L200,120 L300,95 L400,55 L520,20 L520,240 L0,240 Z"
+            class="hours-area-fill"
+          ></path>
+          <path
+            d="M0,180 L100,145 L200,120 L300,95 L400,55 L520,20"
+            class="hours-line"
+          ></path>
+        </svg>
+
+        <div class="hours-x-axis">
+          <span>Oct</span>
+          <span>Nov</span>
+          <span>Dec</span>
+          <span>Jan</span>
+          <span>Feb</span>
+          <span>Mar</span>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <article class="dashboard-panel">
+    <h3 class="dashboard-panel-title">Impact by Category</h3>
+
+    <div class="impact-chart-wrap">
+      <div class="impact-pie-chart"></div>
+
+      <div class="impact-chart-label label-education">Education 0</div>
+      <div class="impact-chart-label label-environment">Environment 0</div>
+      <div class="impact-chart-label label-community">Community 0</div>
+      <div class="impact-chart-label label-justice">Justice 0</div>
+    </div>
+
+    <div class="impact-legend">
+      <span><i class="legend-dot dot-environment"></i>Environment</span>
+      <span><i class="legend-dot dot-education"></i>Education</span>
+      <span><i class="legend-dot dot-community"></i>Community</span>
+      <span><i class="legend-dot dot-justice"></i>Justice</span>
+    </div>
+  </article>
+</section>
+
+<section class="dashboard-panel dashboard-interests-panel">
+  <h3 class="dashboard-panel-title">My Interests</h3>
+  <div id="dashboardInterestTags" class="selected-interest-tags"></div>
+  <!--<p class="interest-change-note">
+    To change your interests, go to your profile or dashboard settings.
+  </p>-->
+</section>
+
+<section class="dashboard-panel dashboard-quick-actions">
+  <h3 class="dashboard-panel-title">Quick Actions</h3>
+
+  <div class="quick-actions-grid">
+    <button class="quick-action-card" data-target="landingView" type="button">
+      <span class="quick-action-icon">♡</span>
+      <div>
+        <strong>My Campaigns</strong>
+        <span>View all activities</span>
+      </div>
+    </button>
+
+    <button class="quick-action-card" data-target="campaignSubmitView" type="button">
+      <span class="quick-action-icon">📢</span>
+      <div>
+        <strong>Submit Campaign</strong>
+        <span>Create a new campaign</span>
+      </div>
+    </button>
+
+    <button class="quick-action-card" data-target="businessDirectoryView" type="button">
+      <span class="quick-action-icon">🏪</span>
+      <div>
+        <strong>Businesses</strong>
+        <span>Supported companies</span>
+      </div>
+    </button>
+
+    <button class="quick-action-card" data-target="landingView" type="button">
+      <span class="quick-action-icon">↗</span>
+      <div>
+        <strong>Explore More</strong>
+        <span>Find new causes</span>
+      </div>
+    </button>
+  </div>
+</section>
+</div>
+</section>
+
 
     <section id="campaignSubmitView" class="view">
   <div class="panel">
@@ -829,6 +830,63 @@
     </div>
 
     <div id="businessDetailBody" class="custom-modal-body"></div>
+  </div>
+</section>
+
+<section id="joinedCampaignsModal" class="custom-modal hidden">
+  <div class="custom-modal-backdrop"></div>
+
+  <div class="custom-modal-content business-modal-card">
+    <div class="custom-modal-header">
+      <div>
+        <p class="modal-eyebrow">YOUR CAMPAIGNS</p>
+        <h3>Joined Campaigns</h3>
+      </div>
+
+      <button id="closeJoinedCampaignsModal" type="button" class="custom-modal-close" aria-label="Close modal">
+        ✕
+      </button>
+    </div>
+
+    <div id="joinedCampaignsModalBody" class="custom-modal-body"></div>
+  </div>
+</section>
+
+<section id="campaignDetailModal" class="custom-modal hidden">
+  <div class="custom-modal-backdrop"></div>
+
+  <div class="custom-modal-content business-modal-card">
+    <div class="custom-modal-header">
+      <div>
+        <p class="modal-eyebrow">CAMPAIGN DETAILS</p>
+        <h3 id="campaignDetailTitle">Campaign Details</h3>
+      </div>
+
+      <button id="closeCampaignDetailModal" type="button" class="custom-modal-close" aria-label="Close modal">
+        ✕
+      </button>
+    </div>
+
+    <div id="campaignDetailBody" class="custom-modal-body"></div>
+  </div>
+</section>
+
+<section id="myBusinessesModal" class="custom-modal hidden">
+  <div class="custom-modal-backdrop"></div>
+
+  <div class="custom-modal-content business-modal-card">
+    <div class="custom-modal-header">
+      <div>
+        <p class="modal-eyebrow">YOUR BUSINESSES</p>
+        <h3>Businesses You Created</h3>
+      </div>
+
+      <button id="closeMyBusinessesModal" type="button" class="custom-modal-close" aria-label="Close modal">
+        ✕
+      </button>
+    </div>
+
+    <div id="myBusinessesModalBody" class="custom-modal-body"></div>
   </div>
 </section>
 

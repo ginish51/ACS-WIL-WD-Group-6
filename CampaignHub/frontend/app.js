@@ -5,7 +5,7 @@ const appState = {
   authMode: "login",
   currentUser: getStoredUser(),
   token: localStorage.getItem("token") || null,
-  joinedCampaigns: JSON.parse(localStorage.getItem("joinedCampaigns") || "[]"),
+  joinedCampaigns: [],
   businesses: [],
   campaigns: [],
   myCampaigns: [],
@@ -114,9 +114,16 @@ function showView(viewId) {
 
   window.scrollTo({ top: 0, behavior: "smooth" });
 
-  if (viewId === "dashboardView") {
+if (viewId === "dashboardView") {
+  updateDashboard();
+
+  Promise.all([
+    loadMyCampaignStats(),
+    loadMyCampaigns()
+  ]).then(() => {
     updateDashboard();
-  }
+  });
+}
 
   if (viewId === "interestSelectionView") {
     renderInterestSelection();
@@ -193,6 +200,185 @@ function closeBusinessDetailsModal() {
   if (modal) {
     modal.classList.add("hidden");
   }
+  document.body.classList.remove("modal-open");
+}
+
+function showJoinedCampaignsModal() {
+  const modal = $("joinedCampaignsModal");
+  const body = $("joinedCampaignsModalBody");
+
+  if (!modal || !body) return;
+
+  body.innerHTML = "";
+
+  if (!appState.joinedCampaigns.length) {
+    body.innerHTML = `
+      <div class="empty-modal-state">
+        <p class="small-muted">You have not joined any campaigns yet.</p>
+      </div>
+    `;
+    modal.classList.remove("hidden");
+    document.body.classList.add("modal-open");
+    return;
+  }
+
+  const list = document.createElement("div");
+  list.className = "joined-campaigns-list";
+
+  appState.joinedCampaigns.forEach((campaign) => {
+    const card = document.createElement("article");
+    card.className = "joined-campaign-item";
+    card.innerHTML = `
+      <div class="joined-campaign-item-content">
+        <h4>${campaign.title || "Untitled Campaign"}</h4>
+        <p>${campaign.description || "No description available."}</p>
+        <div class="joined-campaign-item-meta">
+          <span class="joined-campaign-pill">${campaign.category || "General"}</span>
+          <span class="joined-campaign-open">View details →</span>
+        </div>
+      </div>
+    `;
+
+    card.addEventListener("click", () => {
+      showCampaignDetailsModal(campaign);
+    });
+
+    list.appendChild(card);
+  });
+
+  body.appendChild(list);
+  modal.classList.remove("hidden");
+  document.body.classList.add("modal-open");
+}
+
+function closeJoinedCampaignsModal() {
+  const modal = $("joinedCampaignsModal");
+  if (modal) modal.classList.add("hidden");
+  document.body.classList.remove("modal-open");
+}
+
+function showCampaignDetailsModal(campaign) {
+  const modal = $("campaignDetailModal");
+  const title = $("campaignDetailTitle");
+  const body = $("campaignDetailBody");
+
+  if (!modal || !title || !body) return;
+
+  const displayTitle = campaign.title || "Untitled Campaign";
+  const displayCategory = campaign.category || "General";
+  const displayDescription = campaign.description || "No description available.";
+  const displayImage = campaign.image_url || "";
+  const displayGoal = campaign.goal_amount ?? 0;
+  const displayCurrent = campaign.current_amount ?? 0;
+
+  title.textContent = displayTitle;
+
+  body.innerHTML = `
+    <div class="business-modal-layout">
+      ${
+        displayImage
+          ? `<div class="business-modal-image-wrap">
+               <img src="${displayImage}" alt="${displayTitle}" class="business-detail-modal-image">
+             </div>`
+          : ""
+      }
+
+      <div class="business-modal-info">
+        <div class="business-modal-tags">
+          <span class="business-modal-pill">${displayCategory}</span>
+          <span class="business-modal-pill subtle">Joined Campaign</span>
+        </div>
+
+        <div class="business-modal-section">
+          <h4>About</h4>
+          <p>${displayDescription}</p>
+        </div>
+
+        <div class="business-modal-section">
+          <h4>Progress</h4>
+          <p><strong>Goal Amount:</strong> ${displayGoal}</p>
+          <p><strong>Current Amount:</strong> ${displayCurrent}</p>
+        </div>
+      </div>
+    </div>
+  `;
+
+  modal.classList.remove("hidden");
+  document.body.classList.add("modal-open");
+}
+
+function closeCampaignDetailsModal() {
+  const modal = $("campaignDetailModal");
+  if (modal) modal.classList.add("hidden");
+  document.body.classList.remove("modal-open");
+}
+
+function showMyBusinessesModal() {
+  const modal = $("myBusinessesModal");
+  const body = $("myBusinessesModalBody");
+
+  if (!modal || !body) return;
+
+  body.innerHTML = "";
+
+  if (!appState.currentUser) {
+    body.innerHTML = `
+      <div class="empty-modal-state">
+        <p class="small-muted">Please log in to view your businesses.</p>
+      </div>
+    `;
+    modal.classList.remove("hidden");
+    document.body.classList.add("modal-open");
+    return;
+  }
+
+  const myBusinesses = appState.businesses.filter(
+    (business) => Number(business.user_id) === Number(appState.currentUser.id)
+  );
+
+  if (!myBusinesses.length) {
+    body.innerHTML = `
+      <div class="empty-modal-state">
+        <p class="small-muted">You have not created any businesses yet.</p>
+      </div>
+    `;
+    modal.classList.remove("hidden");
+    document.body.classList.add("modal-open");
+    return;
+  }
+
+  const list = document.createElement("div");
+  list.className = "joined-campaigns-list";
+
+  myBusinesses.forEach((business) => {
+    const card = document.createElement("article");
+    card.className = "joined-campaign-item";
+    card.innerHTML = `
+      <div class="joined-campaign-item-content">
+        <h4>${business.business_name || "Unnamed Business"}</h4>
+        <p>${business.description || "No description available."}</p>
+        <div class="joined-campaign-item-meta">
+          <span class="joined-campaign-pill">${business.category || business.industry || "General"}</span>
+          <span class="joined-campaign-open">View details →</span>
+        </div>
+      </div>
+    `;
+
+    card.addEventListener("click", () => {
+      showBusinessDetailsModal(business);
+    });
+
+    list.appendChild(card);
+  });
+
+  body.appendChild(list);
+  modal.classList.remove("hidden");
+  document.body.classList.add("modal-open");
+}
+
+function closeMyBusinessesModal() {
+  const modal = $("myBusinessesModal");
+  if (modal) modal.classList.add("hidden");
   document.body.classList.remove("modal-open");
 }
 
@@ -561,6 +747,7 @@ async function loadMyCampaigns() {
     const campaigns = await apiRequest("/api/my-campaigns");
     appState.myCampaigns = Array.isArray(campaigns) ? campaigns : [];
     renderMyCampaigns();
+    renderImpactCategoryChart();
   } catch (error) {
     console.error("Failed to load my campaigns:", error);
   }
@@ -580,14 +767,53 @@ function renderMyCampaigns() {
   appState.myCampaigns.forEach((campaign) => {
     const item = document.createElement("div");
     item.className = "info-card";
+
+    const statusClass =
+      campaign.status === "active"
+        ? "status-active"
+        : campaign.status === "pending"
+        ? "status-pending"
+        : "status-rejected";
+
     item.innerHTML = `
-      <h3>${campaign.title}</h3>
-      <p>${campaign.description || "No description available."}</p>
-      <p><strong>Status:</strong> ${campaign.status}</p>
-      ${campaign.rejection_reason ? `<p><strong>Reason:</strong> ${campaign.rejection_reason}</p>` : ""}
+      <div class="submitted-campaign-card">
+        <div class="submitted-campaign-header">
+          <h3>${campaign.title || "Untitled Campaign"}</h3>
+          <span class="submitted-status-badge ${statusClass}">
+            ${campaign.status || "unknown"}
+          </span>
+        </div>
+        <p>${campaign.description || "No description available."}</p>
+        <div class="submitted-campaign-meta">
+          <span>📂 ${campaign.category || "General"}</span>
+          <span>💰 Goal: ${campaign.goal_amount ?? 0}</span>
+        </div>
+        ${campaign.rejection_reason ? `<p class="rejection-note"><strong>Reason:</strong> ${campaign.rejection_reason}</p>` : ""}
+      </div>
     `;
+
     container.appendChild(item);
   });
+}
+
+function getJoinedCampaignsStorageKey(user = appState.currentUser) {
+  if (!user) return "joinedCampaigns_guest";
+  return `joinedCampaigns_${user.email || user.id}`;
+}
+
+function loadJoinedCampaigns(user = appState.currentUser) {
+  try {
+    return JSON.parse(localStorage.getItem(getJoinedCampaignsStorageKey(user)) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveJoinedCampaigns() {
+  localStorage.setItem(
+    getJoinedCampaignsStorageKey(),
+    JSON.stringify(appState.joinedCampaigns)
+  );
 }
 
 
@@ -702,7 +928,7 @@ function renderBusinesses() {
   if (!businessGrid) return;
 
   businessGrid.innerHTML = "";
-  
+
   businessGrid.classList.remove("skeleton-grid");
 
   const searchValue = exists("businessSearchInput")
@@ -953,37 +1179,185 @@ function updateDashboard() {
     return;
   }
 
+  const myBusinesses = appState.businesses.filter(
+    (business) => Number(business.user_id) === Number(user.id)
+  );
+
+  const joinedCount = appState.joinedCampaigns.length;
+  const promotedBusinessCount = myBusinesses.length;
+  const activeCount = Number(appState.campaignStats.active_count || 0);
+  const pendingCount = Number(appState.campaignStats.pending_count || 0);
+  const rejectedCount = Number(appState.campaignStats.rejected_count || 0);
+
+  const impactPoints =
+    (joinedCount * 25) +
+    (promotedBusinessCount * 40) +
+    (activeCount * 60) +
+    (pendingCount * 10);
+
+  const volunteerHours = (joinedCount * 6) + (activeCount * 3);
+
+  const level = Math.max(1, Math.floor(impactPoints / 100) + 1);
+  const streakDays = Math.max(1, Math.min(30, joinedCount + activeCount));
+
   if (exists("dashboardName")) $("dashboardName").textContent = user.name;
+
   if (exists("dashboardMeta")) {
-    $("dashboardMeta").textContent = `Impact Maker since January ${new Date().getFullYear()}`;
+    $("dashboardMeta").textContent = user.role === "admin"
+      ? "Admin • Impact Hub"
+      : "Impact Maker";
   }
 
-  if (exists("statCampaigns")) $("statCampaigns").textContent = appState.joinedCampaigns.length || 12;
-  if (exists("statPoints")) $("statPoints").textContent = 100 + appState.joinedCampaigns.length * 25;
-  if (exists("statBusinesses")) $("statBusinesses").textContent = appState.businesses.length || 0;
-  if (exists("statHours")) $("statHours").textContent = 87;
+  const levelBadge = document.querySelector(".badge-level");
+  if (levelBadge) levelBadge.textContent = `Level ${level}`;
 
+  const streakBadge = document.querySelector(".badge-streak");
+  if (streakBadge) streakBadge.textContent = `🔥 ${streakDays} Day Streak`;
+
+  if (exists("statCampaigns")) $("statCampaigns").textContent = joinedCount;
+  if (exists("statPoints")) $("statPoints").textContent = impactPoints;
+  if (exists("statBusinesses")) $("statBusinesses").textContent = promotedBusinessCount;
+  if (exists("statHours")) $("statHours").textContent = volunteerHours;
+
+  const statCampaignsSub = document.querySelector("#statCampaigns")?.nextElementSibling?.nextElementSibling;
+  if (statCampaignsSub) statCampaignsSub.textContent = `${activeCount} active / ${pendingCount} pending`;
+
+  const statPointsSub = document.querySelector("#statPoints")?.nextElementSibling?.nextElementSibling;
+  if (statPointsSub) statPointsSub.textContent = `${Math.max(0, level * 100 - impactPoints)} to next level`;
+
+  const statBusinessesSub = document.querySelector("#statBusinesses")?.nextElementSibling?.nextElementSibling;
+  if (statBusinessesSub) statBusinessesSub.textContent = promotedBusinessCount ? "Promoted by you" : "No businesses yet";
+
+  const statHoursSub = document.querySelector("#statHours")?.nextElementSibling?.nextElementSibling;
+  if (statHoursSub) statHoursSub.textContent = `${joinedCount} joined campaigns`;
+
+  if (exists("userActiveCampaigns")) $("userActiveCampaigns").textContent = activeCount;
+  if (exists("userPendingCampaigns")) $("userPendingCampaigns").textContent = pendingCount;
+  if (exists("userRejectedCampaigns")) $("userRejectedCampaigns").textContent = rejectedCount;
+
+  renderDashboardInterestTags();
+  renderVolunteerHoursChart(joinedCount, activeCount, pendingCount);
+  renderImpactCategoryChart();
+}
+
+function renderDashboardInterestTags() {
   const dashboardInterestTags = $("dashboardInterestTags");
-  if (dashboardInterestTags) {
-    dashboardInterestTags.innerHTML = "";
+  if (!dashboardInterestTags) return;
 
-    if (!appState.selectedInterests || appState.selectedInterests.length === 0) {
-      const empty = document.createElement("p");
-      empty.className = "small-muted";
-      empty.textContent = "No interests selected yet.";
-      dashboardInterestTags.appendChild(empty);
-    } else {
-      appState.selectedInterests.forEach((interest) => {
-        const tag = document.createElement("span");
-        tag.className = "interest-tag";
-        tag.textContent = getInterestLabel(interest);
-        dashboardInterestTags.appendChild(tag);
-      });
-    }
+  dashboardInterestTags.innerHTML = "";
+
+  if (!appState.selectedInterests || appState.selectedInterests.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "small-muted";
+    empty.textContent = "No interests selected yet.";
+    dashboardInterestTags.appendChild(empty);
+    return;
   }
 
-  loadMyCampaignStats();
-  loadMyCampaigns();
+  appState.selectedInterests.forEach((interest) => {
+    const tag = document.createElement("span");
+    tag.className = "interest-tag";
+    tag.textContent = getInterestLabel(interest);
+    dashboardInterestTags.appendChild(tag);
+  });
+}
+
+function renderVolunteerHoursChart(joinedCount, activeCount, pendingCount) {
+  const points = [
+    Math.max(2, joinedCount),
+    Math.max(4, joinedCount + 1),
+    Math.max(6, joinedCount + activeCount),
+    Math.max(8, joinedCount + activeCount + 1),
+    Math.max(10, joinedCount + activeCount + pendingCount),
+    Math.max(12, joinedCount + activeCount + pendingCount + 2)
+  ];
+
+  const maxValue = Math.max(...points, 12);
+  const svg = document.querySelector(".hours-chart-svg");
+  if (!svg) return;
+
+  const width = 520;
+  const height = 240;
+  const stepX = width / (points.length - 1);
+
+  const linePoints = points.map((value, index) => {
+    const x = index * stepX;
+    const y = height - (value / maxValue) * 220;
+    return `${x},${y}`;
+  });
+
+  const areaPath =
+    `M${linePoints[0]} ` +
+    linePoints.slice(1).map((p) => `L${p}`).join(" ") +
+    ` L${width},240 L0,240 Z`;
+
+  const linePath =
+    `M${linePoints[0]} ` +
+    linePoints.slice(1).map((p) => `L${p}`).join(" ");
+
+  const area = svg.querySelector(".hours-area-fill");
+  const line = svg.querySelector(".hours-line");
+
+  if (area) area.setAttribute("d", areaPath);
+  if (line) line.setAttribute("d", linePath);
+}
+
+function renderImpactCategoryChart() {
+  const counts = {
+    environment: 0,
+    education: 0,
+    community: 0,
+    justice: 0
+  };
+
+  const normalizeCategory = (category) => {
+    const value = String(category || "").toLowerCase();
+
+    if (value.includes("environment")) return "environment";
+    if (value.includes("education")) return "education";
+    if (value.includes("community")) return "community";
+    if (value.includes("equality") || value.includes("justice")) return "justice";
+    if (value.includes("health")) return "community";
+    if (value.includes("poverty")) return "community";
+    return null;
+  };
+
+  appState.joinedCampaigns.forEach((campaign) => {
+    const key = normalizeCategory(campaign.category);
+    if (key) counts[key] += 1;
+  });
+
+  appState.myCampaigns.forEach((campaign) => {
+    const key = normalizeCategory(campaign.category);
+    if (key) counts[key] += 1;
+  });
+
+  const total = Object.values(counts).reduce((sum, value) => sum + value, 0) || 1;
+
+  const env = (counts.environment / total) * 100;
+  const edu = (counts.education / total) * 100;
+  const comm = (counts.community / total) * 100;
+  const just = (counts.justice / total) * 100;
+
+  const pie = document.querySelector(".impact-pie-chart");
+  if (pie) {
+    pie.style.background = `conic-gradient(
+      #34d399 0% ${env}%,
+      #60a5fa ${env}% ${env + edu}%,
+      #fbbf24 ${env + edu}% ${env + edu + comm}%,
+      #f472b6 ${env + edu + comm}% 100%
+    )`;
+  }
+
+  const labelEnvironment = document.querySelector(".label-environment");
+  const labelEducation = document.querySelector(".label-education");
+  const labelCommunity = document.querySelector(".label-community");
+  const labelJustice = document.querySelector(".label-justice");
+
+  if (labelEnvironment) labelEnvironment.textContent = `Environment ${counts.environment}`;
+  if (labelEducation) labelEducation.textContent = `Education ${counts.education}`;
+  if (labelCommunity) labelCommunity.textContent = `Community ${counts.community}`;
+  if (labelJustice) labelJustice.textContent = `Justice ${counts.justice}`;
 }
 
 function setAuthMode(mode) {
@@ -1109,6 +1483,7 @@ async function handleLogin(event) {
 
     saveSession(data.token, data.user);
     appState.selectedInterests = loadSelectedInterests(data.user);
+    appState.joinedCampaigns = loadJoinedCampaigns(data.user);
     renderNav();
 
     if (hasSelectedInterests()) {
@@ -1194,6 +1569,7 @@ async function handleRegister(event) {
 function handleLogout() {
   clearSession();
   appState.selectedInterests = [];
+  appState.joinedCampaigns = [];
   appState.myCampaigns = [];
   appState.adminPendingCampaigns = [];
   appState.campaignStats = {
@@ -1491,9 +1867,6 @@ function bindEvents() {
   $("closeBusinessDetailModal").addEventListener("click", closeBusinessDetailsModal);
 }
 
-if (exists("closeBusinessDetailModal")) {
-  $("closeBusinessDetailModal").addEventListener("click", closeBusinessDetailsModal);
-}
 
 if (exists("businessDetailModal")) {
   $("businessDetailModal").addEventListener("click", (event) => {
@@ -1502,6 +1875,71 @@ if (exists("businessDetailModal")) {
       event.target.id === "businessDetailModal"
     ) {
       closeBusinessDetailsModal();
+    }
+  });
+}
+
+if (exists("openJoinedCampaignsCard")) {
+  $("openJoinedCampaignsCard").addEventListener("click", showJoinedCampaignsModal);
+  $("openJoinedCampaignsCard").addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      showJoinedCampaignsModal();
+    }
+  });
+}
+
+if (exists("closeJoinedCampaignsModal")) {
+  $("closeJoinedCampaignsModal").addEventListener("click", closeJoinedCampaignsModal);
+}
+
+if (exists("joinedCampaignsModal")) {
+  $("joinedCampaignsModal").addEventListener("click", (event) => {
+    if (
+      event.target.classList.contains("custom-modal-backdrop") ||
+      event.target.id === "joinedCampaignsModal"
+    ) {
+      closeJoinedCampaignsModal();
+    }
+  });
+}
+
+if (exists("closeCampaignDetailModal")) {
+  $("closeCampaignDetailModal").addEventListener("click", closeCampaignDetailsModal);
+}
+
+if (exists("campaignDetailModal")) {
+  $("campaignDetailModal").addEventListener("click", (event) => {
+    if (
+      event.target.classList.contains("custom-modal-backdrop") ||
+      event.target.id === "campaignDetailModal"
+    ) {
+      closeCampaignDetailsModal();
+    }
+  });
+}
+
+if (exists("openMyBusinessesCard")) {
+  $("openMyBusinessesCard").addEventListener("click", showMyBusinessesModal);
+  $("openMyBusinessesCard").addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      showMyBusinessesModal();
+    }
+  });
+}
+
+if (exists("closeMyBusinessesModal")) {
+  $("closeMyBusinessesModal").addEventListener("click", closeMyBusinessesModal);
+}
+
+if (exists("myBusinessesModal")) {
+  $("myBusinessesModal").addEventListener("click", (event) => {
+    if (
+      event.target.classList.contains("custom-modal-backdrop") ||
+      event.target.id === "myBusinessesModal"
+    ) {
+      closeMyBusinessesModal();
     }
   });
 }
@@ -1518,9 +1956,12 @@ function init() {
 
   document.body.classList.remove("modal-open");
   
-  if (appState.currentUser) {
-    appState.selectedInterests = loadSelectedInterests(appState.currentUser);
-  }
+ if (appState.currentUser) {
+  appState.selectedInterests = loadSelectedInterests(appState.currentUser);
+  appState.joinedCampaigns = loadJoinedCampaigns(appState.currentUser);
+} else {
+  appState.joinedCampaigns = loadJoinedCampaigns(null);
+}
 
   renderNav();
   loadCampaigns();
