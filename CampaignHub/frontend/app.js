@@ -342,6 +342,12 @@ function renderNav() {
 
 
 async function loadCampaigns() {
+  if (exists("causeCountText")) {
+    $("causeCountText").textContent = "Loading causes...";
+  }
+
+  renderCauseSkeletons(3);
+
   try {
     const campaigns = await apiRequest("/api/campaigns");
     appState.campaigns = Array.isArray(campaigns) ? campaigns : [];
@@ -349,7 +355,16 @@ async function loadCampaigns() {
   } catch (error) {
     console.error("Failed to load campaigns:", error);
     appState.campaigns = [];
-    renderCauses();
+
+    if (exists("causeCountText")) {
+      $("causeCountText").textContent = "Failed to load causes.";
+    }
+
+    const causeGrid = $("causeGrid");
+    if (causeGrid) {
+      causeGrid.classList.remove("skeleton-grid");
+      causeGrid.innerHTML = `<p class="small-muted">Could not load campaigns right now.</p>`;
+    }
   }
 }
 
@@ -358,6 +373,7 @@ function renderCauses() {
   if (!causeGrid) return;
 
   causeGrid.innerHTML = "";
+  causeGrid.classList.remove("skeleton-grid");
 
   const searchValue = exists("causeSearchInput")
     ? $("causeSearchInput").value.trim().toLowerCase()
@@ -655,6 +671,12 @@ async function rejectCampaign(campaignId, rejectionReason) {
 
 
 async function loadBusinesses() {
+  if (exists("businessCountText")) {
+    $("businessCountText").textContent = "Loading businesses...";
+  }
+
+  renderBusinessSkeletons(3);
+
   try {
     const businesses = await apiRequest("/api/businesses");
     appState.businesses = Array.isArray(businesses) ? businesses : [];
@@ -662,7 +684,16 @@ async function loadBusinesses() {
   } catch (error) {
     console.error("Failed to load businesses:", error);
     appState.businesses = [];
-    renderBusinesses();
+
+    if (exists("businessCountText")) {
+      $("businessCountText").textContent = "Failed to load businesses.";
+    }
+
+    const businessGrid = $("businessGrid");
+    if (businessGrid) {
+      businessGrid.classList.remove("skeleton-grid");
+      businessGrid.innerHTML = `<p class="small-muted">Could not load businesses right now.</p>`;
+    }
   }
 }
 
@@ -671,6 +702,8 @@ function renderBusinesses() {
   if (!businessGrid) return;
 
   businessGrid.innerHTML = "";
+  
+  businessGrid.classList.remove("skeleton-grid");
 
   const searchValue = exists("businessSearchInput")
     ? $("businessSearchInput").value.trim().toLowerCase()
@@ -994,6 +1027,53 @@ async function apiRequest(path, options = {}) {
   }
 
   return data;
+}
+
+function renderCauseSkeletons(count = 3) {
+  const causeGrid = $("causeGrid");
+  if (!causeGrid) return;
+
+  causeGrid.innerHTML = "";
+  causeGrid.classList.add("skeleton-grid");
+
+  for (let i = 0; i < count; i++) {
+    const card = document.createElement("article");
+    card.className = "skeleton-card";
+    card.innerHTML = `
+      <div class="skeleton-image"></div>
+      <div class="skeleton-body">
+        <div class="skeleton-line title"></div>
+        <div class="skeleton-line short"></div>
+        <div class="skeleton-line long"></div>
+        <div class="skeleton-line medium"></div>
+      </div>
+    `;
+    causeGrid.appendChild(card);
+  }
+}
+
+function renderBusinessSkeletons(count = 3) {
+  const businessGrid = $("businessGrid");
+  if (!businessGrid) return;
+
+  businessGrid.innerHTML = "";
+  businessGrid.classList.add("skeleton-grid");
+
+  for (let i = 0; i < count; i++) {
+    const card = document.createElement("article");
+    card.className = "skeleton-card";
+    card.innerHTML = `
+      <div class="skeleton-image"></div>
+      <div class="skeleton-body">
+        <div class="skeleton-line title"></div>
+        <div class="skeleton-line short"></div>
+        <div class="skeleton-line long"></div>
+        <div class="skeleton-line medium"></div>
+        <div class="skeleton-line button"></div>
+      </div>
+    `;
+    businessGrid.appendChild(card);
+  }
 }
 
 async function handleLogin(event) {
