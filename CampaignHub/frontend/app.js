@@ -240,8 +240,11 @@ function showJoinedCampaignsModal() {
     `;
 
     card.addEventListener("click", () => {
-      showCampaignDetailsModal(campaign);
-    });
+  closeJoinedCampaignsModal();
+  setTimeout(() => {
+    showCampaignDetailsModal(campaign);
+  }, 120);
+});
 
     list.appendChild(card);
   });
@@ -364,9 +367,12 @@ function showMyBusinessesModal() {
       </div>
     `;
 
-    card.addEventListener("click", () => {
-      showBusinessDetailsModal(business);
-    });
+   card.addEventListener("click", () => {
+  closeMyBusinessesModal();
+  setTimeout(() => {
+    showBusinessDetailsModal(business);
+  }, 120);
+});
 
     list.appendChild(card);
   });
