@@ -567,17 +567,27 @@ function renderNav() {
     dropdown.appendChild(trigger);
     dropdown.appendChild(menu);
     nav.appendChild(dropdown);
-  } else {
-    addButton(
-      "Join Impact Hub",
-      () => {
-        showView("authView");
-        setAuthMode("login");
-      },
-      "nav-button",
-      isActiveView(["authView"])
-    );
-  }
+} else {
+  addButton(
+    "Log In",
+    () => {
+      showView("authView");
+      setAuthMode("login");
+    },
+    "nav-button",
+    appState.currentView === "authView" && appState.authMode === "login"
+  );
+
+  addButton(
+    "Register",
+    () => {
+      showView("authView");
+      setAuthMode("register");
+    },
+    "nav-button",
+    appState.currentView === "authView" && appState.authMode === "register"
+  );
+}
 }
 
 
