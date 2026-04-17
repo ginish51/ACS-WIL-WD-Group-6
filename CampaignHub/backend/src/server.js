@@ -162,7 +162,8 @@ app.post("/api/campaigns", upload.single("image"), authenticateToken, (req, res)
     title,
     description,
     category,
-    goal_amount
+    goal_amount,
+    goal_users
   } = req.body;
 
   if (!title) {
@@ -174,23 +175,24 @@ app.post("/api/campaigns", upload.single("image"), authenticateToken, (req, res)
     : null;
 
   const sql = `
-    INSERT INTO campaigns
-    (title, description, category, image_url, goal_amount, current_amount, creator_id, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `;
+  INSERT INTO campaigns
+  (title, description, category, image_url, goal_amount, goal_users, current_amount, creator_id, status)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+`;
 
   db.run(
     sql,
     [
-      title,
-      description || null,
-      category || null,
-      image_url,
-      goal_amount || null,
-      0,
-      req.user.id,
-      "pending"
-    ],
+  title,
+  description || null,
+  category || null,
+  image_url,
+  goal_amount || null,
+  goal_users || null,
+  0,
+  req.user.id,
+  "pending"
+],
     function (err) {
       if (err) {
         console.error("CAMPAIGN INSERT ERROR:", err.message);

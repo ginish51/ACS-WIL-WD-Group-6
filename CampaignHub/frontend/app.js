@@ -63,6 +63,52 @@ function isValidEmail(email) {
   return emailRegex.test(email);
 }
 
+function updateCampaignPreview() {
+  const title = exists("campaignTitle")
+    ? $("campaignTitle").value.trim() || "Your Campaign Title"
+    : "Your Campaign Title";
+
+  const description = exists("campaignDescription")
+    ? $("campaignDescription").value.trim() || "Your campaign description preview will appear here as you type."
+    : "Your campaign description preview will appear here as you type.";
+
+  const category = exists("campaignCategory")
+    ? $("campaignCategory").value.trim() || "Category"
+    : "Category";
+
+  const goalAmount = exists("campaignGoalAmount")
+    ? $("campaignGoalAmount").value.trim() || "0"
+    : "0";
+
+  const goalUsers = exists("campaignGoalUsers")
+    ? $("campaignGoalUsers").value.trim() || "0"
+    : "0";
+
+  if (exists("campaignPreviewTitle")) $("campaignPreviewTitle").textContent = title;
+  if (exists("campaignPreviewDescription")) $("campaignPreviewDescription").textContent = description;
+  if (exists("campaignPreviewCategory")) $("campaignPreviewCategory").textContent = category;
+  if (exists("campaignPreviewGoalAmount")) $("campaignPreviewGoalAmount").textContent = `💰 Goal Amount: ${goalAmount}`;
+  if (exists("campaignPreviewGoalUsers")) $("campaignPreviewGoalUsers").textContent = `👥 Goal Users: ${goalUsers}`;
+}
+
+function setupCampaignCategoryButtons() {
+  document.querySelectorAll(".campaign-category-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      document.querySelectorAll(".campaign-category-btn").forEach((btn) => {
+        btn.classList.remove("active");
+      });
+
+      button.classList.add("active");
+
+      if (exists("campaignCategory")) {
+        $("campaignCategory").value = button.dataset.category;
+      }
+
+      updateCampaignPreview();
+    });
+  });
+}
+
 function getInterestLabel(interestKey) {
   const labels = {
     community: "💗 Community Support",
@@ -272,6 +318,7 @@ function showCampaignDetailsModal(campaign) {
   const displayDescription = campaign.description || "No description available.";
   const displayImage = campaign.image_url || "";
   const displayGoal = campaign.goal_amount ?? 0;
+  const displayGoalUsers = campaign.goal_users ?? 0;
   const displayCurrent = campaign.current_amount ?? 0;
 
   title.textContent = displayTitle;
@@ -301,6 +348,7 @@ function showCampaignDetailsModal(campaign) {
           <h4>Progress</h4>
           <p><strong>Goal Amount:</strong> ${displayGoal}</p>
           <p><strong>Current Amount:</strong> ${displayCurrent}</p>
+          <p><strong>Goal Users:</strong> ${displayGoalUsers}</p>
         </div>
       </div>
     </div>
@@ -673,11 +721,12 @@ async function handleCampaignSubmit(event) {
   const description = exists("campaignDescription") ? $("campaignDescription").value.trim() : "";
   const category = exists("campaignCategory") ? $("campaignCategory").value.trim() : "";
   const goalAmount = exists("campaignGoalAmount") ? $("campaignGoalAmount").value.trim() : "";
+  const goalUsers = exists("campaignGoalUsers") ? $("campaignGoalUsers").value.trim() : "";
   const imageFile = exists("campaignImage") ? $("campaignImage").files[0] : null;
 
   if (exists("campaignMsg")) $("campaignMsg").textContent = "";
 
-  if (!title || !description || !category || !goalAmount || !imageFile) {
+  if (!title || !description || !category || !goalAmount || !goalUsers || !imageFile) {
     if (exists("campaignMsg")) {
       $("campaignMsg").textContent = "Please complete all campaign fields and upload an image.";
     }
@@ -690,6 +739,7 @@ async function handleCampaignSubmit(event) {
     formData.append("description", description);
     formData.append("category", category);
     formData.append("goal_amount", goalAmount);
+    formData.append("goal_users", goalUsers);
     formData.append("image", imageFile);
 
     const response = await fetch(`${API_BASE}/api/campaigns`, {
@@ -711,6 +761,10 @@ async function handleCampaignSubmit(event) {
     }
 
     if (exists("campaignForm")) $("campaignForm").reset();
+    if (exists("campaignPreviewImageArea")) {
+  $("campaignPreviewImageArea").innerHTML = '<span class="campaign-preview-icon">🌱</span>';
+}
+updateCampaignPreview();
 
     await loadMyCampaignStats();
     await loadMyCampaigns();
@@ -1114,6 +1168,30 @@ function updateBusinessPreview() {
   }
 
   updateBusinessSubmitState();
+}
+
+function updateCampaignImagePreview() {
+  if (!exists("campaignImage") || !exists("campaignPreviewImageArea")) return;
+
+  const file = $("campaignImage").files[0];
+
+  if (!file) {
+    $("campaignPreviewImageArea").innerHTML = '<span class="campaign-preview-icon">🌱</span>';
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    $("campaignPreviewImageArea").innerHTML = `
+      <img
+        src="${reader.result}"
+        alt="Campaign preview"
+        class="campaign-preview-uploaded-image"
+      >
+    `;
+  };
+
+  reader.readAsDataURL(file);
 }
 
 function updateBusinessSubmitState() {
@@ -1950,11 +2028,23 @@ if (exists("myBusinessesModal")) {
   });
 }
 
+if (exists("campaignTitle")) $("campaignTitle").addEventListener("input", updateCampaignPreview);
+if (exists("campaignDescription")) $("campaignDescription").addEventListener("input", updateCampaignPreview);
+if (exists("campaignCategory")) $("campaignCategory").addEventListener("input", updateCampaignPreview);
+if (exists("campaignGoalAmount")) $("campaignGoalAmount").addEventListener("input", updateCampaignPreview);
+if (exists("campaignGoalUsers")) {
+  $("campaignGoalUsers").addEventListener("input", updateCampaignPreview);
+}
+if (exists("campaignImage")) {
+  $("campaignImage").addEventListener("change", updateCampaignImagePreview);
+}
+
   setupFilters();
   setupViewButtons();
   setupMenuToggle();
   setupBusinessCategoryButtons();
   setupBusinessLogoPreview();
+  setupCampaignCategoryButtons();
 }
 
 
@@ -1973,6 +2063,7 @@ function init() {
   loadCampaigns();
   loadBusinesses();
   updateBusinessPreview();
+  updateCampaignPreview();
   bindEvents();
 
   if (appState.currentUser && exists("dashboardView")) {

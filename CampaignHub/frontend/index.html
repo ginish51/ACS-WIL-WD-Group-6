@@ -729,59 +729,149 @@
 </section>
 
 
-    <section id="campaignSubmitView" class="view">
-  <div class="panel">
-    <p class="eyebrow">CAMPAIGN SUBMISSION</p>
-    <h2>Submit a Campaign</h2>
-    <p class="small-muted">
-      Campaigns are reviewed by admin before appearing publicly.
-    </p>
-
-    <form id="campaignForm" class="auth-form">
-      <label class="auth-label">
-        <span>Title</span>
-        <div class="input-wrap">
-          <input id="campaignTitle" type="text" placeholder="Campaign title" required />
-        </div>
-      </label>
-
-      <label class="auth-label">
-        <span>Description</span>
-        <textarea
-          id="campaignDescription"
-          class="campaign-textarea"
-          rows="5"
-          placeholder="Describe your campaign"
-          required
-        ></textarea>
-      </label>
-
-      <label class="auth-label">
-        <span>Category</span>
-        <div class="input-wrap">
-          <input id="campaignCategory" type="text" placeholder="e.g. Environment" required />
-        </div>
-      </label>
-
-      <label class="auth-label">
-        <span>Goal Amount</span>
-        <div class="input-wrap">
-          <input id="campaignGoalAmount" type="number" min="1" placeholder="Enter goal amount" required />
-        </div>
-      </label>
-
-      <label class="auth-label">
-        <span>Campaign Image</span>
-        <input id="campaignImage" type="file" accept=".png,.jpg,.jpeg,.webp" required />
-      </label>
-
-      <div class="section-actions">
-        <button class="btn btn-primary" type="submit">Submit Campaign</button>
-        <button class="btn btn-secondary" data-target="dashboardView" type="button">Cancel</button>
+<section id="campaignSubmitView" class="view">
+  <div class="campaign-submit-shell">
+    <div class="campaign-submit-header">
+      <div class="campaign-submit-header-icon">📢</div>
+      <div>
+        <h2>Submit Your Campaign</h2>
+        <p>
+          Share your cause with the community. Campaigns are reviewed by admin
+          before they appear publicly.
+        </p>
       </div>
+    </div>
 
-      <p id="campaignMsg" class="form-message"></p>
-    </form>
+    <div class="campaign-submit-grid">
+      <section class="campaign-form-card">
+        <form id="campaignForm" class="campaign-submit-form">
+          <label class="campaign-label">
+            <span>Campaign Title *</span>
+            <div class="input-wrap">
+              <input id="campaignTitle" type="text" placeholder="Enter your campaign title" required />
+            </div>
+          </label>
+
+          <label class="campaign-label">
+            <span>Description *</span>
+            <textarea
+              id="campaignDescription"
+              class="campaign-textarea"
+              rows="6"
+              placeholder="Tell people what your campaign is about, who it helps, and why it matters..."
+              required
+            ></textarea>
+          </label>
+
+          <div class="campaign-label-group">
+  <span class="campaign-group-title">Campaign Category * (select one)</span>
+
+  <div class="campaign-category-grid">
+    <button class="campaign-category-btn" type="button" data-category="Community">
+      <span class="cat-emoji">💗</span>
+      <span>Community</span>
+    </button>
+
+    <button class="campaign-category-btn" type="button" data-category="Environment">
+      <span class="cat-emoji">🌿</span>
+      <span>Environment</span>
+    </button>
+
+    <button class="campaign-category-btn" type="button" data-category="Education">
+      <span class="cat-emoji">🎓</span>
+      <span>Education</span>
+    </button>
+
+    <button class="campaign-category-btn" type="button" data-category="Equality">
+      <span class="cat-emoji">⚖️</span>
+      <span>Equality</span>
+    </button>
+
+    <button class="campaign-category-btn" type="button" data-category="Health">
+      <span class="cat-emoji">🏥</span>
+      <span>Health</span>
+    </button>
+
+    <button class="campaign-category-btn" type="button" data-category="Poverty">
+      <span class="cat-emoji">🤝</span>
+      <span>Poverty</span>
+    </button>
+  </div>
+
+  <input id="campaignCategory" type="hidden" required />
+</div>
+
+<label class="campaign-label">
+  <span>Goal Amount *</span>
+  <div class="input-wrap">
+    <input id="campaignGoalAmount" type="number" min="1" placeholder="Enter funding target" required />
+  </div>
+</label>
+
+<label class="campaign-label">
+  <span>Goal Users / Supporters *</span>
+  <div class="input-wrap">
+    <input id="campaignGoalUsers" type="number" min="1" placeholder="Enter target number of supporters" required />
+  </div>
+</label>
+
+          <div class="campaign-label-group">
+            <span class="campaign-group-title">Campaign Image *</span>
+            <label class="campaign-upload-box" for="campaignImage">
+              <input id="campaignImage" type="file" accept=".png,.jpg,.jpeg,.webp" hidden required />
+              <div class="campaign-upload-icon">🖼️</div>
+              <div class="campaign-upload-title">Click to upload campaign image</div>
+              <div class="campaign-upload-sub">PNG, JPG, WEBP up to 5MB</div>
+            </label>
+          </div>
+
+          <div class="section-actions">
+            <button class="btn btn-primary" type="submit">Submit Campaign</button>
+            <button class="btn btn-secondary" data-target="dashboardView" type="button">Cancel</button>
+          </div>
+
+          <p id="campaignMsg" class="form-message"></p>
+        </form>
+      </section>
+
+      <aside class="campaign-submit-side">
+        <div class="campaign-preview-card">
+          <div class="campaign-preview-image" id="campaignPreviewImageArea">
+  <span class="campaign-preview-icon">🌱</span>
+</div>
+
+          <div class="campaign-preview-body">
+            <div class="campaign-preview-top">
+              <div>
+                <h3 id="campaignPreviewTitle">Your Campaign Title</h3>
+                <span id="campaignPreviewCategory" class="campaign-preview-pill">Category</span>
+              </div>
+              <div class="campaign-preview-status">Pending Review</div>
+            </div>
+
+            <p id="campaignPreviewDescription">
+              Your campaign description preview will appear here as you type.
+            </p>
+
+            <div class="campaign-preview-footer">
+  <span id="campaignPreviewGoalAmount">💰 Goal Amount: 0</span>
+  <span id="campaignPreviewGoalUsers">👥 Goal Users: 0</span>
+  <span>🛡️ Admin Approval Required</span>
+</div>
+          </div>
+        </div>
+
+        <div class="campaign-tips-card">
+          <h3>✨ Tips for a strong campaign</h3>
+          <ul>
+            <li>Use a clear and specific campaign title</li>
+            <li>Explain the purpose and impact of your campaign</li>
+            <li>Choose a realistic funding goal</li>
+            <li>Add an image that represents your cause well</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
   </div>
 </section>
 

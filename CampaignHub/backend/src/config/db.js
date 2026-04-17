@@ -50,30 +50,32 @@ db.serialize(() => {
   db.run(`ALTER TABLE businesses ADD COLUMN trending TEXT DEFAULT 'New'`, () => {});
   db.run(`ALTER TABLE businesses ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP`, () => {});
 
-  db.run(`CREATE TABLE IF NOT EXISTS campaigns (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    description TEXT,
-    category TEXT,
-    image_url TEXT,
-    goal_amount REAL,
-    current_amount REAL DEFAULT 0,
-    creator_id INTEGER,
-    status TEXT DEFAULT 'pending',
-    reviewed_at DATETIME,
-    rejection_reason TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (creator_id) REFERENCES users (id)
-  )`);
+ db.run(`CREATE TABLE IF NOT EXISTS campaigns (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  description TEXT,
+  category TEXT,
+  image_url TEXT,
+  goal_amount REAL,
+  goal_users INTEGER,
+  current_amount REAL DEFAULT 0,
+  creator_id INTEGER,
+  status TEXT DEFAULT 'pending',
+  reviewed_at DATETIME,
+  rejection_reason TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (creator_id) REFERENCES users (id)
+)`);
 
-  db.run(`ALTER TABLE campaigns ADD COLUMN image_url TEXT`, () => {});
-  db.run(`ALTER TABLE campaigns ADD COLUMN goal_amount REAL`, () => {});
-  db.run(`ALTER TABLE campaigns ADD COLUMN current_amount REAL DEFAULT 0`, () => {});
-  db.run(`ALTER TABLE campaigns ADD COLUMN creator_id INTEGER`, () => {});
-  db.run(`ALTER TABLE campaigns ADD COLUMN status TEXT DEFAULT 'pending'`, () => {});
-  db.run(`ALTER TABLE campaigns ADD COLUMN reviewed_at DATETIME`, () => {});
-  db.run(`ALTER TABLE campaigns ADD COLUMN rejection_reason TEXT`, () => {});
-  db.run(`ALTER TABLE campaigns ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP`, () => {});
+db.run(`ALTER TABLE campaigns ADD COLUMN image_url TEXT`, () => {});
+db.run(`ALTER TABLE campaigns ADD COLUMN goal_amount REAL`, () => {});
+db.run(`ALTER TABLE campaigns ADD COLUMN goal_users INTEGER`, () => {});
+db.run(`ALTER TABLE campaigns ADD COLUMN current_amount REAL DEFAULT 0`, () => {});
+db.run(`ALTER TABLE campaigns ADD COLUMN creator_id INTEGER`, () => {});
+db.run(`ALTER TABLE campaigns ADD COLUMN status TEXT DEFAULT 'pending'`, () => {});
+db.run(`ALTER TABLE campaigns ADD COLUMN reviewed_at DATETIME`, () => {});
+db.run(`ALTER TABLE campaigns ADD COLUMN rejection_reason TEXT`, () => {});
+db.run(`ALTER TABLE campaigns ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP`, () => {});
 
   // seed admin account
   const adminEmail = "admin@impacthub.com";
