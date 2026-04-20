@@ -364,6 +364,68 @@ function closeCampaignDetailsModal() {
   document.body.classList.remove("modal-open");
 }
 
+function showSubmittedCampaignDetailsModal(campaign) {
+  const modal = $("submittedCampaignDetailModal");
+  const title = $("submittedCampaignDetailTitle");
+  const body = $("submittedCampaignDetailBody");
+
+  if (!modal || !title || !body) return;
+
+  const displayTitle = campaign.title || "Untitled Campaign";
+  const displayCategory = campaign.category || "General";
+  const displayDescription = campaign.description || "No description available.";
+  const displayImage = campaign.image_url || "images/community.jpg";
+  const displayGoalAmount = campaign.goal_amount ?? 0;
+  const displayGoalUsers = campaign.goal_users ?? 0;
+  const displayCurrentAmount = campaign.current_amount ?? 0;
+  const displayStatus = campaign.status || "unknown";
+
+  title.textContent = displayTitle;
+
+  body.innerHTML = `
+    <div class="business-modal-layout">
+      <div class="business-modal-image-wrap">
+        <img src="${displayImage}" alt="${displayTitle}" class="business-detail-modal-image">
+      </div>
+
+      <div class="business-modal-info">
+        <div class="business-modal-tags">
+          <span class="business-modal-pill">${displayCategory}</span>
+          <span class="business-modal-pill subtle">${displayStatus}</span>
+        </div>
+
+        <div class="business-modal-section">
+          <h4>About</h4>
+          <p>${displayDescription}</p>
+        </div>
+
+        <div class="business-modal-section">
+          <h4>Campaign Goals</h4>
+          <p><strong>Goal Amount:</strong> ${displayGoalAmount}</p>
+          <p><strong>Goal Users:</strong> ${displayGoalUsers}</p>
+          <p><strong>Current Amount:</strong> ${displayCurrentAmount}</p>
+        </div>
+
+        ${campaign.rejection_reason ? `
+          <div class="business-modal-section">
+            <h4>Review Note</h4>
+            <p>${campaign.rejection_reason}</p>
+          </div>
+        ` : ""}
+      </div>
+    </div>
+  `;
+
+  modal.classList.remove("hidden");
+  document.body.classList.add("modal-open");
+}
+
+function closeSubmittedCampaignDetailsModal() {
+  const modal = $("submittedCampaignDetailModal");
+  if (modal) modal.classList.add("hidden");
+  document.body.classList.remove("modal-open");
+}
+
 function showMyBusinessesModal() {
   const modal = $("myBusinessesModal");
   const body = $("myBusinessesModalBody");
@@ -857,7 +919,7 @@ function renderMyCampaigns() {
 
   appState.myCampaigns.forEach((campaign) => {
     const item = document.createElement("div");
-    item.className = "info-card";
+    item.className = "info-card submitted-campaign-clickable";
 
     const statusClass =
       campaign.status === "active"
@@ -866,22 +928,42 @@ function renderMyCampaigns() {
         ? "status-pending"
         : "status-rejected";
 
+    const imageUrl = campaign.image_url || "images/community.jpg";
+
     item.innerHTML = `
       <div class="submitted-campaign-card">
         <div class="submitted-campaign-header">
-          <h3>${campaign.title || "Untitled Campaign"}</h3>
-          <span class="submitted-status-badge ${statusClass}">
-            ${campaign.status || "unknown"}
-          </span>
+          <div class="submitted-campaign-title-wrap">
+            <div
+              class="submitted-campaign-thumb"
+              style="background-image: url('${imageUrl}');"
+              aria-hidden="true"
+            ></div>
+
+            <div class="submitted-campaign-title-text">
+              <h3>${campaign.title || "Untitled Campaign"}</h3>
+              <span class="submitted-status-badge ${statusClass}">
+                ${campaign.status || "unknown"}
+              </span>
+            </div>
+          </div>
         </div>
+
         <p>${campaign.description || "No description available."}</p>
+
         <div class="submitted-campaign-meta">
           <span>📂 ${campaign.category || "General"}</span>
-          <span>💰 Goal: ${campaign.goal_amount ?? 0}</span>
+          <span>💰 Goal Amount: ${campaign.goal_amount ?? 0}</span>
+          <span>👥 Goal Users: ${campaign.goal_users ?? 0}</span>
         </div>
+
         ${campaign.rejection_reason ? `<p class="rejection-note"><strong>Reason:</strong> ${campaign.rejection_reason}</p>` : ""}
       </div>
     `;
+
+    item.addEventListener("click", () => {
+      showSubmittedCampaignDetailsModal(campaign);
+    });
 
     container.appendChild(item);
   });
@@ -2068,6 +2150,21 @@ if (exists("campaignGoalUsers")) {
 }
 if (exists("campaignImage")) {
   $("campaignImage").addEventListener("change", updateCampaignImagePreview);
+}
+
+if (exists("closeSubmittedCampaignDetailModal")) {
+  $("closeSubmittedCampaignDetailModal").addEventListener("click", closeSubmittedCampaignDetailsModal);
+}
+
+if (exists("submittedCampaignDetailModal")) {
+  $("submittedCampaignDetailModal").addEventListener("click", (event) => {
+    if (
+      event.target.classList.contains("custom-modal-backdrop") ||
+      event.target.id === "submittedCampaignDetailModal"
+    ) {
+      closeSubmittedCampaignDetailsModal();
+    }
+  });
 }
 
   setupFilters();
