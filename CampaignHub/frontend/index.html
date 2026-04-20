@@ -684,68 +684,81 @@
   <div id="myCampaignsList"></div>
 </section>
 
-<div class="dashboard-tabs">
-  <button class="dashboard-tab active" type="button">Overview</button>
-  <button class="dashboard-tab" type="button">Activity</button>
-  <button class="dashboard-tab" type="button">Achievements</button>
+<div class="dashboard-section-break">
+  <div class="dashboard-section-break-line"></div>
+  <div class="dashboard-section-break-text">
+    <p class="dashboard-section-eyebrow">INSIGHTS</p>
+    <h3>User Stats Dashboard</h3>
+    <p>Track your campaign activity and impact at a glance.</p>
+  </div>
 </div>
 
 <section class="dashboard-main-grid">
   <article class="dashboard-panel">
-    <h3 class="dashboard-panel-title">↗ Volunteer Hours</h3>
+  <h3 class="dashboard-panel-title">↗ Weekly Campaign Joins</h3>
 
-    <div class="hours-chart">
-      <div class="hours-y-axis">
-        <span>28</span>
-        <span>21</span>
-        <span>14</span>
-        <span>7</span>
-        <span>0</span>
-      </div>
-
-      <div class="hours-chart-area">
-        <div class="hours-grid-lines"></div>
-        <svg viewBox="0 0 520 240" class="hours-chart-svg" preserveAspectRatio="none" aria-hidden="true">
-          <path
-            d="M0,180 L100,145 L200,120 L300,95 L400,55 L520,20 L520,240 L0,240 Z"
-            class="hours-area-fill"
-          ></path>
-          <path
-            d="M0,180 L100,145 L200,120 L300,95 L400,55 L520,20"
-            class="hours-line"
-          ></path>
-        </svg>
-
-        <div class="hours-x-axis">
-          <span>Oct</span>
-          <span>Nov</span>
-          <span>Dec</span>
-          <span>Jan</span>
-          <span>Feb</span>
-          <span>Mar</span>
-        </div>
-      </div>
-    </div>
-  </article>
+  <div class="weekly-joins-chart">
+    <div id="weeklyJoinsBars" class="weekly-joins-bars"></div>
+    <div id="weeklyJoinsLabels" class="weekly-joins-labels"></div>
+  </div>
+</article>
 
   <article class="dashboard-panel">
     <h3 class="dashboard-panel-title">Impact by Category</h3>
 
-    <div class="impact-chart-wrap">
-      <div class="impact-pie-chart"></div>
+    <div class="impact-chart-wrap clean-pie-wrap">
+  <div class="impact-pie-chart"></div>
+</div>
 
-      <div class="impact-chart-label label-education">Education 0</div>
-      <div class="impact-chart-label label-environment">Environment 0</div>
-      <div class="impact-chart-label label-community">Community 0</div>
-      <div class="impact-chart-label label-justice">Justice 0</div>
-    </div>
+<div class="impact-legend impact-legend-grid">
+  <div class="impact-legend-item">
+    <span class="impact-legend-left">
+      <i class="legend-dot dot-community"></i>
+      <span>Community</span>
+    </span>
+    <strong class="legend-count label-community">0</strong>
+  </div>
 
-    <div class="impact-legend">
-      <span><i class="legend-dot dot-environment"></i>Environment</span>
-      <span><i class="legend-dot dot-education"></i>Education</span>
-      <span><i class="legend-dot dot-community"></i>Community</span>
-      <span><i class="legend-dot dot-justice"></i>Justice</span>
-    </div>
+  <div class="impact-legend-item">
+    <span class="impact-legend-left">
+      <i class="legend-dot dot-environment"></i>
+      <span>Environment</span>
+    </span>
+    <strong class="legend-count label-environment">0</strong>
+  </div>
+
+  <div class="impact-legend-item">
+    <span class="impact-legend-left">
+      <i class="legend-dot dot-education"></i>
+      <span>Education</span>
+    </span>
+    <strong class="legend-count label-education">0</strong>
+  </div>
+
+  <div class="impact-legend-item">
+    <span class="impact-legend-left">
+      <i class="legend-dot dot-equality"></i>
+      <span>Equality</span>
+    </span>
+    <strong class="legend-count label-equality">0</strong>
+  </div>
+
+  <div class="impact-legend-item">
+    <span class="impact-legend-left">
+      <i class="legend-dot dot-health"></i>
+      <span>Health</span>
+    </span>
+    <strong class="legend-count label-health">0</strong>
+  </div>
+
+  <div class="impact-legend-item">
+    <span class="impact-legend-left">
+      <i class="legend-dot dot-poverty"></i>
+      <span>Poverty</span>
+    </span>
+    <strong class="legend-count label-poverty">0</strong>
+  </div>
+</div>
   </article>
 </section>
 
@@ -782,14 +795,6 @@
       <div>
         <strong>Businesses</strong>
         <span>Supported companies</span>
-      </div>
-    </button>
-
-    <button class="quick-action-card" data-target="landingView" type="button">
-      <span class="quick-action-icon">↗</span>
-      <div>
-        <strong>Explore More</strong>
-        <span>Find new causes</span>
       </div>
     </button>
   </div>

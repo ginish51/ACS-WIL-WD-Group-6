@@ -274,16 +274,26 @@ function showJoinedCampaignsModal() {
   appState.joinedCampaigns.forEach((campaign) => {
     const card = document.createElement("article");
     card.className = "joined-campaign-item";
-    card.innerHTML = `
-      <div class="joined-campaign-item-content">
-        <h4>${campaign.title || "Untitled Campaign"}</h4>
-        <p>${campaign.description || "No description available."}</p>
-        <div class="joined-campaign-item-meta">
-          <span class="joined-campaign-pill">${campaign.category || "General"}</span>
-          <span class="joined-campaign-open">View details →</span>
-        </div>
+    const imageUrl = campaign.image_url || "images/community.jpg";
+
+card.innerHTML = `
+  <div class="joined-campaign-item-row">
+    <div
+      class="joined-campaign-thumb"
+      style="background-image: url('${imageUrl}');"
+      aria-hidden="true"
+    ></div>
+
+    <div class="joined-campaign-item-content">
+      <h4>${campaign.title || "Untitled Campaign"}</h4>
+      <p>${campaign.description || "No description available."}</p>
+      <div class="joined-campaign-item-meta">
+        <span class="joined-campaign-pill">${campaign.category || "General"}</span>
+        <span class="joined-campaign-open">View details →</span>
       </div>
-    `;
+    </div>
+  </div>
+`;
 
     card.addEventListener("click", () => {
   closeJoinedCampaignsModal();
@@ -466,16 +476,26 @@ function showMyBusinessesModal() {
   myBusinesses.forEach((business) => {
     const card = document.createElement("article");
     card.className = "joined-campaign-item";
-    card.innerHTML = `
-      <div class="joined-campaign-item-content">
-        <h4>${business.business_name || "Unnamed Business"}</h4>
-        <p>${business.description || "No description available."}</p>
-        <div class="joined-campaign-item-meta">
-          <span class="joined-campaign-pill">${business.category || business.industry || "General"}</span>
-          <span class="joined-campaign-open">View details →</span>
-        </div>
+    const imageUrl = business.image_url || "images/business-eco.jpg";
+
+card.innerHTML = `
+  <div class="joined-campaign-item-row">
+    <div
+      class="joined-campaign-thumb"
+      style="background-image: url('${imageUrl}');"
+      aria-hidden="true"
+    ></div>
+
+    <div class="joined-campaign-item-content">
+      <h4>${business.business_name || "Unnamed Business"}</h4>
+      <p>${business.description || "No description available."}</p>
+      <div class="joined-campaign-item-meta">
+        <span class="joined-campaign-pill">${business.category || business.industry || "General"}</span>
+        <span class="joined-campaign-open">View details →</span>
       </div>
-    `;
+    </div>
+  </div>
+`;
 
    card.addEventListener("click", () => {
   closeMyBusinessesModal();
@@ -893,13 +913,43 @@ async function loadMyCampaignStats() {
   }
 }
 
+function syncApprovedCampaignsToJoined() {
+  if (!appState.currentUser) return;
+
+  let changed = false;
+
+  appState.myCampaigns.forEach((campaign) => {
+    if (campaign.status !== "active") return;
+
+    const alreadyJoined = appState.joinedCampaigns.some(
+      (joined) => Number(joined.id) === Number(campaign.id)
+    );
+
+    if (!alreadyJoined) {
+      appState.joinedCampaigns.push({
+        ...campaign,
+        joinedAt: campaign.joinedAt || new Date().toISOString()
+      });
+      changed = true;
+    }
+  });
+
+  if (changed) {
+    saveJoinedCampaigns();
+  }
+}
+
 async function loadMyCampaigns() {
   if (!appState.currentUser || !appState.token) return;
 
   try {
     const campaigns = await apiRequest("/api/my-campaigns");
     appState.myCampaigns = Array.isArray(campaigns) ? campaigns : [];
+
+    syncApprovedCampaignsToJoined();
+
     renderMyCampaigns();
+    renderWeeklyJoinsChart();
     renderImpactCategoryChart();
   } catch (error) {
     console.error("Failed to load my campaigns:", error);
@@ -1433,7 +1483,7 @@ if (statCampaignsSub) statCampaignsSub.textContent = "Click to view joined campa
   if (exists("userRejectedCampaigns")) $("userRejectedCampaigns").textContent = rejectedCount;
 
   renderDashboardInterestTags();
-  renderVolunteerHoursChart(joinedCount, activeCount, pendingCount);
+  renderWeeklyJoinsChart();
   renderImpactCategoryChart();
 }
 
@@ -1459,63 +1509,87 @@ function renderDashboardInterestTags() {
   });
 }
 
-function renderVolunteerHoursChart(joinedCount, activeCount, pendingCount) {
-  const points = [
-    Math.max(2, joinedCount),
-    Math.max(4, joinedCount + 1),
-    Math.max(6, joinedCount + activeCount),
-    Math.max(8, joinedCount + activeCount + 1),
-    Math.max(10, joinedCount + activeCount + pendingCount),
-    Math.max(12, joinedCount + activeCount + pendingCount + 2)
-  ];
+function renderWeeklyJoinsChart() {
+  const barsContainer = $("weeklyJoinsBars");
+  const labelsContainer = $("weeklyJoinsLabels");
 
-  const maxValue = Math.max(...points, 12);
-  const svg = document.querySelector(".hours-chart-svg");
-  if (!svg) return;
+  if (!barsContainer || !labelsContainer) return;
 
-  const width = 520;
-  const height = 240;
-  const stepX = width / (points.length - 1);
+  barsContainer.innerHTML = "";
+  labelsContainer.innerHTML = "";
 
-  const linePoints = points.map((value, index) => {
-    const x = index * stepX;
-    const y = height - (value / maxValue) * 220;
-    return `${x},${y}`;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Monday to Sunday of current week
+  const currentDay = today.getDay(); // Sun=0, Mon=1, ..., Sat=6
+  const diffToMonday = currentDay === 0 ? -6 : 1 - currentDay;
+
+  const monday = new Date(today);
+  monday.setDate(today.getDate() + diffToMonday);
+
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const day = new Date(monday);
+    day.setDate(monday.getDate() + i);
+    day.setHours(0, 0, 0, 0);
+    days.push(day);
+  }
+
+  const counts = days.map((day) => {
+    const nextDay = new Date(day);
+    nextDay.setDate(day.getDate() + 1);
+
+    return appState.joinedCampaigns.filter((campaign) => {
+      if (!campaign.joinedAt) return false;
+      const joinedDate = new Date(campaign.joinedAt);
+      return joinedDate >= day && joinedDate < nextDay;
+    }).length;
   });
 
-  const areaPath =
-    `M${linePoints[0]} ` +
-    linePoints.slice(1).map((p) => `L${p}`).join(" ") +
-    ` L${width},240 L0,240 Z`;
+  const maxCount = Math.max(...counts, 1);
 
-  const linePath =
-    `M${linePoints[0]} ` +
-    linePoints.slice(1).map((p) => `L${p}`).join(" ");
+  counts.forEach((count, index) => {
+    const barWrap = document.createElement("div");
+    barWrap.className = "weekly-joins-bar-wrap";
 
-  const area = svg.querySelector(".hours-area-fill");
-  const line = svg.querySelector(".hours-line");
+    const value = document.createElement("span");
+    value.className = "weekly-joins-value";
+    value.textContent = count;
 
-  if (area) area.setAttribute("d", areaPath);
-  if (line) line.setAttribute("d", linePath);
+    const bar = document.createElement("div");
+    bar.className = "weekly-joins-bar";
+    bar.style.height = `${Math.max((count / maxCount) * 160, count > 0 ? 24 : 10)}px`;
+
+    barWrap.appendChild(value);
+    barWrap.appendChild(bar);
+    barsContainer.appendChild(barWrap);
+
+    const label = document.createElement("span");
+    label.textContent = days[index].toLocaleDateString("en-AU", { weekday: "short" });
+    labelsContainer.appendChild(label);
+  });
 }
 
 function renderImpactCategoryChart() {
   const counts = {
+    community: 0,
     environment: 0,
     education: 0,
-    community: 0,
-    justice: 0
+    equality: 0,
+    health: 0,
+    poverty: 0
   };
 
   const normalizeCategory = (category) => {
-    const value = String(category || "").toLowerCase();
+    const value = String(category || "").toLowerCase().trim();
 
+    if (value.includes("community")) return "community";
     if (value.includes("environment")) return "environment";
     if (value.includes("education")) return "education";
-    if (value.includes("community")) return "community";
-    if (value.includes("equality") || value.includes("justice")) return "justice";
-    if (value.includes("health")) return "community";
-    if (value.includes("poverty")) return "community";
+    if (value.includes("equality")) return "equality";
+    if (value.includes("health")) return "health";
+    if (value.includes("poverty")) return "poverty";
     return null;
   };
 
@@ -1524,37 +1598,40 @@ function renderImpactCategoryChart() {
     if (key) counts[key] += 1;
   });
 
-  appState.myCampaigns.forEach((campaign) => {
-    const key = normalizeCategory(campaign.category);
-    if (key) counts[key] += 1;
-  });
-
   const total = Object.values(counts).reduce((sum, value) => sum + value, 0) || 1;
 
-  const env = (counts.environment / total) * 100;
-  const edu = (counts.education / total) * 100;
-  const comm = (counts.community / total) * 100;
-  const just = (counts.justice / total) * 100;
+  const community = (counts.community / total) * 100;
+  const environment = (counts.environment / total) * 100;
+  const education = (counts.education / total) * 100;
+  const equality = (counts.equality / total) * 100;
+  const health = (counts.health / total) * 100;
+  const poverty = (counts.poverty / total) * 100;
 
   const pie = document.querySelector(".impact-pie-chart");
   if (pie) {
     pie.style.background = `conic-gradient(
-      #34d399 0% ${env}%,
-      #60a5fa ${env}% ${env + edu}%,
-      #fbbf24 ${env + edu}% ${env + edu + comm}%,
-      #f472b6 ${env + edu + comm}% 100%
-    )`;
+    #fffb11 0% ${community}%,
+    #1fb87f ${community}% ${community + environment}%,
+    #3f7ae0 ${community + environment}% ${community + environment + education}%,
+    #fb246c ${community + environment + education}% ${community + environment + education + equality}%,
+    #a78bfa ${community + environment + education + equality}% ${community + environment + education + equality + health}%,
+    #fb923c ${community + environment + education + equality + health}% 100%
+  )`;
   }
 
+  const labelCommunity = document.querySelector(".label-community");
   const labelEnvironment = document.querySelector(".label-environment");
   const labelEducation = document.querySelector(".label-education");
-  const labelCommunity = document.querySelector(".label-community");
-  const labelJustice = document.querySelector(".label-justice");
+  const labelEquality = document.querySelector(".label-equality");
+  const labelHealth = document.querySelector(".label-health");
+  const labelPoverty = document.querySelector(".label-poverty");
 
-  if (labelEnvironment) labelEnvironment.textContent = `Environment ${counts.environment}`;
-  if (labelEducation) labelEducation.textContent = `Education ${counts.education}`;
-  if (labelCommunity) labelCommunity.textContent = `Community ${counts.community}`;
-  if (labelJustice) labelJustice.textContent = `Justice ${counts.justice}`;
+if (labelCommunity) labelCommunity.textContent = counts.community;
+if (labelEnvironment) labelEnvironment.textContent = counts.environment;
+if (labelEducation) labelEducation.textContent = counts.education;
+if (labelEquality) labelEquality.textContent = counts.equality;
+if (labelHealth) labelHealth.textContent = counts.health;
+if (labelPoverty) labelPoverty.textContent = counts.poverty;
 }
 
 function setAuthMode(mode) {
@@ -1788,12 +1865,18 @@ function handleJoinCampaign() {
   if (!appState.selectedCause) return;
 
   const alreadyJoined = appState.joinedCampaigns.some(
-    (item) => item.id === appState.selectedCause.id
+    (item) => Number(item.id) === Number(appState.selectedCause.id)
   );
 
   if (!alreadyJoined) {
-    appState.joinedCampaigns.push(appState.selectedCause);
+    appState.joinedCampaigns.push({
+      ...appState.selectedCause,
+      joinedAt: new Date().toISOString()
+    });
     saveJoinedCampaigns();
+    renderWeeklyJoinsChart();
+    renderImpactCategoryChart();
+    updateDashboard();
   }
 
   if (exists("joinedMessage")) {
