@@ -706,13 +706,34 @@ function openCauseDetail(causeId) {
 
   appState.selectedCause = cause;
 
-  if (exists("detailCategory")) $("detailCategory").textContent = cause.category || "General";
-  if (exists("detailTitle")) $("detailTitle").textContent = cause.title || "Untitled Campaign";
-  if (exists("detailDescription")) $("detailDescription").textContent = cause.description || "No description available.";
-  if (exists("detailDate")) $("detailDate").textContent = "Ongoing Campaign";
-  if (exists("detailLocation")) $("detailLocation").textContent = "Online / Community";
-  if (exists("detailParticipants")) {
-    $("detailParticipants").textContent = `Raised: ${cause.current_amount ?? 0}`;
+  if (exists("detailCategory")) {
+    $("detailCategory").textContent = cause.category || "General";
+  }
+
+  if (exists("detailTitle")) {
+    $("detailTitle").textContent = cause.title || "Untitled Campaign";
+  }
+
+  if (exists("detailDescription")) {
+    $("detailDescription").textContent =
+      cause.description || "No description available.";
+  }
+
+  if (exists("detailGoalAmount")) {
+    $("detailGoalAmount").textContent = cause.goal_amount ?? 0;
+  }
+
+  if (exists("detailGoalUsers")) {
+    $("detailGoalUsers").textContent = cause.goal_users ?? 0;
+  }
+
+  if (exists("detailCurrentAmount")) {
+    $("detailCurrentAmount").textContent = cause.current_amount ?? 0;
+  }
+
+  if (exists("causeDetailImage")) {
+    const imageUrl = cause.image_url || "images/community.jpg";
+    $("causeDetailImage").style.backgroundImage = `url('${imageUrl}')`;
   }
 
   showView("causeDetailView");
@@ -1314,7 +1335,7 @@ function updateDashboard() {
   if (exists("statHours")) $("statHours").textContent = volunteerHours;
 
   const statCampaignsSub = document.querySelector("#statCampaigns")?.nextElementSibling?.nextElementSibling;
-  if (statCampaignsSub) statCampaignsSub.textContent = `${activeCount} active / ${pendingCount} pending`;
+if (statCampaignsSub) statCampaignsSub.textContent = "Click to view joined campaigns";
 
   const statPointsSub = document.querySelector("#statPoints")?.nextElementSibling?.nextElementSibling;
   if (statPointsSub) statPointsSub.textContent = `${Math.max(0, level * 100 - impactPoints)} to next level`;

@@ -306,63 +306,132 @@
 
     <!-- cause detail -->
     <section id="causeDetailView" class="view">
-      <div class="detail-shell">
-        <button class="text-link" data-back="landingView" type="button">← Back to Causes</button>
+  <section class="cause-detail-screen">
+    <div class="cause-detail-shell">
+      <button class="cause-detail-back-btn" data-back="landingView" type="button">
+        ← Back to Causes
+      </button>
 
-        <article class="detail-card">
-          <div class="detail-badge" id="detailCategory">Environmental Action</div>
-          <h2 id="detailTitle">Clean Ocean Initiative</h2>
-          <p id="detailDescription">
-            Join us in cleaning local beaches and raising awareness about ocean pollution.
-          </p>
-
-          <div class="detail-meta">
-            <span id="detailDate">March 15, 2026</span>
-            <span id="detailLocation">Santa Monica Beach</span>
-            <span id="detailParticipants">47 Participants</span>
+      <article class="cause-detail-card">
+        <div class="cause-detail-hero">
+          <div class="cause-detail-image-wrap">
+            <div id="causeDetailImage" class="cause-detail-image"></div>
           </div>
 
-          <div class="detail-actions">
-            <button id="joinCampaignBtn" class="btn btn-primary" type="button">Join Campaign</button>
-            <button class="btn btn-secondary" data-back="landingView" type="button">Browse More Causes</button>
+          <div class="cause-detail-content">
+            <span id="detailCategory" class="cause-detail-category">Environmental Action</span>
+
+            <h2 id="detailTitle" class="cause-detail-title">Campaign Title</h2>
+
+            <p id="detailDescription" class="cause-detail-description">
+              Campaign description goes here.
+            </p>
+
+            <div class="cause-detail-meta-grid">
+  <div class="cause-detail-meta-card">
+    <span class="cause-detail-meta-icon">💰</span>
+    <div>
+      <strong>Goal Amount</strong>
+      <p id="detailGoalAmount">0</p>
+    </div>
+  </div>
+
+  <div class="cause-detail-meta-card">
+    <span class="cause-detail-meta-icon">👥</span>
+    <div>
+      <strong>Goal Users</strong>
+      <p id="detailGoalUsers">0</p>
+    </div>
+  </div>
+
+  <div class="cause-detail-meta-card">
+    <span class="cause-detail-meta-icon">📈</span>
+    <div>
+      <strong>Current Amount</strong>
+      <p id="detailCurrentAmount">0</p>
+    </div>
+  </div>
+</div>
+
+            <div class="cause-detail-highlight">
+              <div class="cause-detail-highlight-icon">🌱</div>
+              <div>
+                <strong>Your support matters</strong>
+                <p>
+                  Joining this campaign helps build momentum, awareness, and community support.
+                </p>
+              </div>
+            </div>
+
+            <div class="cause-detail-actions">
+              <button id="joinCampaignBtn" class="btn btn-primary" type="button">
+                Join Campaign
+              </button>
+              <button class="btn btn-secondary" data-back="landingView" type="button">
+                Browse More Causes
+              </button>
+            </div>
           </div>
-        </article>
-      </div>
-    </section>
+        </div>
+      </article>
+    </div>
+  </section>
+</section>
 
     <!-- join success -->
     <section id="joinSuccessView" class="view">
-      <div class="panel">
-        <p class="eyebrow">PARTICIPATION</p>
-        <h2>You're In! 🎉</h2>
-        <p id="joinedMessage">You've successfully joined the campaign.</p>
+  <section class="join-success-screen">
+    <div class="join-success-card">
+      <div class="join-success-top-icon" aria-hidden="true">🎉</div>
 
-        <div class="two-col">
-          <div class="info-card">
-            <h3>Your Next Steps</h3>
-            <ul>
-              <li>Mark your calendar.</li>
-              <li>You’ll receive a reminder.</li>
-              <li>Join the campaign chat.</li>
-            </ul>
-          </div>
+      <p class="eyebrow">CAMPAIGN JOINED</p>
+      <h2 class="join-success-title">You're In!</h2>
+      <p id="joinedMessage" class="join-success-subtitle">
+        You've successfully joined the campaign.
+      </p>
 
-          <div class="info-card">
-            <h3>Recent Activity</h3>
-            <ul>
-              <li>Joined Clean Ocean Initiative — Just now</li>
-              <li>Shared Community Garden Project — 2 days ago</li>
-              <li>Commented on Food Bank Drive — 1 week ago</li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="section-actions">
-          <button id="goDashboardAfterJoin" class="btn btn-primary" type="button">Go to Dashboard</button>
-          <button class="btn btn-secondary" data-target="landingView" type="button">Back Home</button>
+      <div class="join-success-highlight">
+        <div class="join-success-highlight-icon">🌱</div>
+        <div>
+          <strong>Your impact starts now</strong>
+          <p>
+            Thank you for supporting a cause that makes a difference in the community.
+          </p>
         </div>
       </div>
-    </section>
+
+      <div class="join-success-grid">
+        <article class="join-success-info-card">
+          <h3>Next Steps</h3>
+          <ul>
+            <li>Check your dashboard for joined campaigns</li>
+            <li>Stay updated as the campaign progresses</li>
+            <li>Explore more causes you’d like to support</li>
+          </ul>
+        </article>
+
+        <article class="join-success-info-card">
+          <h3>Why It Matters</h3>
+          <p>
+            Every joined campaign helps build stronger support, more awareness,
+            and greater momentum for meaningful change.
+          </p>
+        </article>
+      </div>
+
+      <div class="join-success-divider"></div>
+
+      <div class="join-success-actions">
+        <button id="goDashboardAfterJoin" class="btn btn-primary" type="button">
+          Go to Dashboard
+        </button>
+        <button class="btn btn-secondary" data-target="landingView" type="button">
+          Browse More Campaigns
+        </button>
+      </div>
+    </div>
+  </section>
+</section>
 
     <!-- promote business -->
     <section id="promoteBusinessView" class="view">
@@ -566,8 +635,8 @@
   <article class="dashboard-stat-card dashboard-clickable-card" id="openJoinedCampaignsCard" role="button" tabindex="0">
   <div class="dashboard-stat-icon icon-pink">♡</div>
   <h3 id="statCampaigns">0</h3>
-  <p class="dashboard-stat-title">Campaigns</p>
-  <span class="dashboard-stat-sub">Click to view joined campaigns</span>
+  <p class="dashboard-stat-title">Campaigns Joined</p>
+<span class="dashboard-stat-sub">Click to view joined campaigns</span>
   </article>
 
   <article class="dashboard-stat-card">
