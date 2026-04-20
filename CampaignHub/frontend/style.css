@@ -2930,3 +2930,47 @@ body.modal-open {
   object-fit: cover;
   display: block;
 }
+
+/* Cuter guest auth buttons */
+.nav-login-btn,
+.nav-register-btn {
+  min-width: 110px;
+  justify-content: center;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.nav-login-btn {
+  background: rgba(18, 196, 139, 0.06);
+  border: 1px solid rgba(18, 196, 139, 0.14);
+  color: #0b8d67;
+  box-shadow: 0 6px 14px rgba(18, 196, 139, 0.06);
+}
+
+.nav-login-btn:hover {
+  background: rgba(18, 196, 139, 0.12);
+  border-color: rgba(18, 196, 139, 0.22);
+  color: #067a57;
+}
+
+.nav-register-btn {
+  padding-left: 18px;
+  padding-right: 18px;
+  box-shadow: 0 10px 20px rgba(18, 196, 139, 0.22);
+}
+
+.nav-register-btn:hover {
+  box-shadow: 0 12px 24px rgba(18, 196, 139, 0.28);
+}
+
+.nav-login-btn.active,
+.nav-register-btn.active {
+  transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+  .nav-login-btn,
+  .nav-register-btn {
+    width: 100%;
+  }
+}

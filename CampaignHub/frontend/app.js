@@ -574,17 +574,17 @@ function renderNav() {
       showView("authView");
       setAuthMode("login");
     },
-    "nav-button",
+    "nav-link nav-login-btn",
     appState.currentView === "authView" && appState.authMode === "login"
   );
 
   addButton(
-    "Register",
+    "Join Impact Hub",
     () => {
       showView("authView");
       setAuthMode("register");
     },
-    "nav-button",
+    "nav-button nav-register-btn",
     appState.currentView === "authView" && appState.authMode === "register"
   );
 }
